@@ -1,0 +1,24 @@
+{
+  "name": "playground",
+  "version": "0.0.0",
+  "authors": [
+    "Clayton Grassick <clayton@claytronics.org>"
+  ],
+  "description": "mWater playground",
+  "license": "GPLv3",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "^3.2.0",
+    "backbone": "^1.1.1",
+    "lodash": "^2.4.1",
+    "select2": "^3.4.5",
+    "select2-bootstrap3-css": "https://github.com/fk/select2-bootstrap-css.git#master"
+  }
+}
