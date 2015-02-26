@@ -17,30 +17,37 @@ gulp.task "browserify", ->
 
 gulp.task "libs_css", ->
   return gulp.src([
-    "./bower_components/bootstrap/dist/css/bootstrap.css"
-    "./bower_components/bootstrap/dist/css/bootstrap-theme.css"
-    "./bower_components/select2/select2.css"
-    "./bower_components/select2-bootstrap3-css/select2-bootstrap.css"
+    "bower_components/bootstrap/dist/css/bootstrap.css"
+    "bower_components/bootstrap/dist/css/bootstrap-theme.css"
+    "bower_components/select2/select2.css"
+    "bower_components/select2-bootstrap3-css/select2-bootstrap.css"
+    "bower_components/leaflet/dist/leaflet.css"
   ]).pipe(concat("libs.css"))
     .pipe(gulp.dest("./dist/css/"))
 
 gulp.task "libs_js", ->
   return gulp.src([
-    "./bower_components/jquery/dist/jquery.js"
-    "./bower_components/bootstrap/dist/js/bootstrap.js"
-    "./bower_components/lodash/dist/lodash.js"
-    "./bower_components/backbone/backbone.js"
-    "./bower_components/select2/select2.js"
+    "bower_components/jquery/dist/jquery.js"
+    "bower_components/bootstrap/dist/js/bootstrap.js"
+    "bower_components/lodash/dist/lodash.js"
+    "bower_components/backbone/backbone.js"
+    "bower_components/select2/select2.js"
+    "bower_components/leaflet/dist/leaflet.js"
+    "bower_components/leaflet-plugins/layer/tile/Bing.js"
   ]).pipe(concat("libs.js"))
     .pipe(gulp.dest("./dist/js/"))
 
 gulp.task "copy_fonts", ->
-  return gulp.src(["./bower_components/bootstrap/dist/fonts/*"]).pipe(gulp.dest("./dist/fonts/"))
+  return gulp.src(["bower_components/bootstrap/dist/fonts/*"]).pipe(gulp.dest("./dist/fonts/"))
 
-gulp.task "copy_images", ->
+gulp.task 'copy_leaflet_images', ->
+  return gulp.src("bower_components/leaflet/images/*")
+  .pipe(gulp.dest('dist/css/images/'))
+
+gulp.task "copy_select2_images", ->
   gulp.src([
-    "./bower_components/select2/*.png"
-    "./bower_components/select2/*.gif"
+    "bower_components/select2/*.png"
+    "bower_components/select2/*.gif"
   ]).pipe(gulp.dest("./dist/css/"))
 
 gulp.task "index_css", ->
@@ -59,7 +66,8 @@ gulp.task "build", gulp.parallel([
   "browserify"
   "libs_js"
   "libs_css"
-  "copy_images"
+  "copy_select2_images"
+  "copy_leaflet_images"
   "copy_fonts"
   "copy_assets"
   "index_css"
