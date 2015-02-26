@@ -1,12 +1,46 @@
 
+PopupView = require './PopupView'
+
 module.exports = class MapView 
-  constructor: (id) ->
-    @map = L.map("map")
+  constructor: (options) ->
+    @options = options
+    @ctx = options.ctx
+
+    @map = L.map(options.el)
     @map.setView([37, 8], 4)
     
     # Add base layer
     @baseLayer = L.bingLayer("Ao26dWY2IC8PjorsJKFaoR85EPXCnCohrJdisCWXIULAXFo0JAXquGauppTMQbyU", { type: "Road"})
     @map.addLayer(@baseLayer)
+
+    # Add data layer
+    dataLayer = L.tileLayer(@ctx.apiUrl + "maps/tiles/{z}/{x}/{y}.png?type=wwmc_main")
+    # TODO hack for non-zoom animated tile layers
+    @map._zoomAnimated = false
+    @map.addLayer(dataLayer)
+    @map._zoomAnimated = true
+    $(dataLayer._container).addClass('leaflet-zoom-hide')
+
+    # Add grid layer
+    @gridLayer = new L.UtfGrid(@ctx.apiUrl + "maps/tiles/{z}/{x}/{y}.grid.json?type=wwmc_main", { useJsonP: false })
+    @map.addLayer(@gridLayer)
+
+    # Handle clicks
+    @gridLayer.on 'click', (ev) =>
+      if ev.data and ev.data.id
+        @handleMarkerClick(ev.data.id)
+
+
+  handleMarkerClick: (id) ->
+    # Get site
+    $.getJSON @ctx.apiUrl + "entities/#{id}", (site) =>
+      # Create popup
+      popupView = new PopupView(ctx: @ctx, site: site).render()
+
+      popup = L.popup({ minWidth: 100, offset: [0, -34] })
+        .setLatLng(L.latLng(site.location.coordinates[1], site.location.coordinates[0]))
+        .setContent(popupView.el)
+        .openOn(@map)
 
   #   # Add control for switching type
   #   @baseLayerControl = L.control({position: 'topright'})

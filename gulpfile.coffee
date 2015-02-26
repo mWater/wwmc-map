@@ -32,8 +32,10 @@ gulp.task "libs_js", ->
     "bower_components/lodash/dist/lodash.js"
     "bower_components/backbone/backbone.js"
     "bower_components/select2/select2.js"
-    "bower_components/leaflet/dist/leaflet.js"
+    # TODO compress
+    "bower_components/leaflet/dist/leaflet-src.js"
     "bower_components/leaflet-plugins/layer/tile/Bing.js"
+    "vendor/Leaflet.utfGrid.js"
   ]).pipe(concat("libs.js"))
     .pipe(gulp.dest("./dist/js/"))
 
