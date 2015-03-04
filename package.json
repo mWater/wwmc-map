@@ -1,7 +1,7 @@
 {
-  "name": "playground",
+  "name": "wwmc-map",
   "version": "0.0.0",
-  "description": "playground",
+  "description": "Map for World Water Monitoring Challenge",
   "main": "lib/index.js",
   "scripts": {
     "test": "testem ci"
@@ -30,7 +30,7 @@
     "del": "^1.1.1",
     "express": "~4.11.2",
     "gulp": "git://github.com/gulpjs/gulp.git#4.0",
-    "gulp-awspublish": "~1.0.1",
+    "gulp-awspublish": "^1.0.5",
     "gulp-buffer": "0.0.2",
     "gulp-concat": "^2.2.0",
     "gulp-rework": "^1.0.2",

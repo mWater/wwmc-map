@@ -5,6 +5,24 @@ source = require 'vinyl-source-stream'
 concat = require 'gulp-concat'
 rework = require 'gulp-rework'
 reworkNpm = require 'rework-npm'
+awspublish = require 'gulp-awspublish'
+fs = require 'fs'
+
+publishBucket = (bucket) ->
+  # Read credentials
+  aws = JSON.parse(fs.readFileSync("/home/clayton/.ssh/aws-credentials.json"))
+  aws.bucket = bucket
+
+  publisher = awspublish.create(aws)
+  headers = { 'Cache-Control': 'no-cache, must-revalidate' }
+  
+  return gulp.src('./dist/**/*.*')
+    .pipe(awspublish.gzip())
+    .pipe(publisher.publish(headers))
+    .pipe(publisher.cache())
+    .pipe(publisher.sync())    
+    .pipe(awspublish.reporter())
+
 
 gulp.task "browserify", ->
   shim(browserify("./index.coffee",
@@ -74,6 +92,8 @@ gulp.task "build", gulp.parallel([
   "copy_assets"
   "index_css"
 ])
+
+gulp.task 'deploy', gulp.series('build', -> publishBucket("wwmc-map.mwater.co"))
 
 gulp.task "default", gulp.series("build")
 

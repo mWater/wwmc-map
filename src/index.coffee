@@ -1,5 +1,5 @@
 MapView = require './MapView'
 
-ctx = { apiUrl: "http://mwaterapi.ngrok.com/v3/" }
+ctx = { apiUrl: "https://api.mwater.co/v3/" }
 
 mapView = new MapView(ctx: ctx, el: "map")
