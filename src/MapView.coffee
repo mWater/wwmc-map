@@ -15,6 +15,8 @@ module.exports = class MapView
 
     # Add data layer
     dataLayer = L.tileLayer(@ctx.apiUrl + "maps/tiles/{z}/{x}/{y}.png?type=wwmc_main")
+    dataLayer.setOpacity(0.8)
+
     # TODO hack for non-zoom animated tile layers
     @map._zoomAnimated = false
     @map.addLayer(dataLayer)
