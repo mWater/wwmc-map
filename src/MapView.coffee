@@ -68,7 +68,7 @@ module.exports = class MapView
      @baseLayerControl.addTo(@map)
 
   addColorCodingParameterControl: ->
-    @colorCodingParameterControl = L.control({position: 'bottomright'})
+    @colorCodingParameterControl = L.control({position: 'topright'})
 
     @colorCodingParameterControl.onAdd = (map) =>
       @colorCodingParameterDiv = $(require("./ColorCodingParameterControl.hbs")())
