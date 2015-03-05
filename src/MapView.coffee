@@ -30,6 +30,12 @@ module.exports = class MapView
       if ev.data and ev.data.id
         @handleMarkerClick(ev.data.id)
 
+    @searchControl = new L.esri.Controls.Geosearch({position: 'topright'}).addTo(@map)
+
+    #@addBaseLayerControl()
+    @addLegendControl()
+    @addColorCodingParameterControl()
+
 
   handleMarkerClick: (id) ->
     # Get site
@@ -37,36 +43,46 @@ module.exports = class MapView
       # Create popup
       popupView = new PopupView(ctx: @ctx, site: site).render()
 
-      popup = L.popup({ minWidth: 100 }) # , offset: [0, -34]
+      popup = L.popup({ minWidth: 420 }) # , offset: [0, -34]
         .setLatLng(L.latLng(site.location.coordinates[1], site.location.coordinates[0]))
         .setContent(popupView.el)
         .openOn(@map)
 
-  #   # Add control for switching type
-  #   @baseLayerControl = L.control({position: 'topright'})
-  #   @baseLayerControl.onAdd = (map) =>
-  #     @baseLayerDiv = $('''<div class="map-info">
-  #       <form>
-  #       <div class="radio">
-  #         <label>
-  #           <input type="radio" name="base_layers" value="bing_road" checked>
-  #           Roads
-  #         </label>
-  #       </div>
-  #       <div class="radio">
-  #         <label>
-  #           <input type="radio" name="base_layers" value="bing_aerial">
-  #           Satellite
-  #         </label>
-  #       </div>
-  #       </form>
-  #     </div>''')
-  #     @baseLayerDiv.find(".radio").on("click", => 
-  #       @config.baseLayer = @baseLayerDiv.find("input:radio[name=base_layers]:checked").val()
-  #       @update()
-  #     )
-  #     return @baseLayerDiv.get(0)
-  #   @baseLayerControl.addTo(@map)
+
+  # Add control for switching type
+  addBaseLayerControl: ->
+     @baseLayerControl = L.control({position: 'topright'})
+
+     @baseLayerControl.onAdd = (map) =>
+       @baseLayerDiv = $(require("./BaseLayerControl.hbs")())
+
+       @baseLayerDiv.find(".radio").on("click", =>
+         null
+         #@config.baseLayer = @baseLayerDiv.find("input:radio[name=base_layers]:checked").val()
+         #@update()
+       )
+       return @baseLayerDiv.get(0)
+     @baseLayerControl.addTo(@map)
+
+  addColorCodingParameterControl: ->
+    @colorCodingParameterControl = L.control({position: 'bottomright'})
+
+    @colorCodingParameterControl.onAdd = (map) =>
+      @colorCodingParameterDiv = $(require("./ColorCodingParameterControl.hbs")())
+
+      return @colorCodingParameterDiv.get(0)
+    @colorCodingParameterControl.addTo(@map)
+
+  addLegendControl: ->
+    @legend = L.control({position: 'bottomright'})
+    @legend.onAdd = (map) =>
+      div = $(require("./Legend.hbs")())
+      #$(div).load(@ctx.apiUrl + "maps/legend?#{query}")
+      return div.get(0)
+
+    @legend.addTo(@map)
+
+
 
   #   @update()
 

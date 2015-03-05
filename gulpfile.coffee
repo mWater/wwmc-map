@@ -40,6 +40,7 @@ gulp.task "libs_css", ->
     "bower_components/select2/select2.css"
     "bower_components/select2-bootstrap3-css/select2-bootstrap.css"
     "bower_components/leaflet/dist/leaflet.css"
+    'vendor/esri/esri-leaflet-geocoder.css'
   ]).pipe(concat("libs.css"))
     .pipe(gulp.dest("./dist/css/"))
 
@@ -53,9 +54,16 @@ gulp.task "libs_js", ->
     # TODO compress
     "bower_components/leaflet/dist/leaflet-src.js"
     "bower_components/leaflet-plugins/layer/tile/Bing.js"
+    "bower_components/Chart.js/Chart.min.js"
     "vendor/Leaflet.utfGrid.js"
+    'vendor/esri/esri-leaflet-core.js'
+    'vendor/esri/esri-leaflet-geocoder.js'
   ]).pipe(concat("libs.js"))
     .pipe(gulp.dest("./dist/js/"))
+
+gulp.task 'copy_esri_images', ->
+  return gulp.src("vendor/esri/img/*")
+  .pipe(gulp.dest('dist/css/img/'))
 
 gulp.task "copy_fonts", ->
   return gulp.src(["bower_components/bootstrap/dist/fonts/*"]).pipe(gulp.dest("./dist/fonts/"))
@@ -91,6 +99,7 @@ gulp.task "build", gulp.parallel([
   "copy_fonts"
   "copy_assets"
   "index_css"
+  "copy_esri_images"
 ])
 
 gulp.task 'deploy', gulp.series('build', -> publishBucket("wwmc-map.mwater.co"))
