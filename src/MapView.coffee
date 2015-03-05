@@ -34,6 +34,7 @@ module.exports = class MapView
 
     #@addBaseLayerControl()
     @addLegendControl()
+    @fetchMap("Visit")
     @addColorCodingParameterControl()
 
 
@@ -70,17 +71,54 @@ module.exports = class MapView
     @colorCodingParameterControl.onAdd = (map) =>
       @colorCodingParameterDiv = $(require("./ColorCodingParameterControl.hbs")())
 
+      @colorCodingParameterDiv.find("#selector").on 'change', (e) =>
+        selected = $('#selector option').filter(':selected').text()
+        @fetchMap(selected)
+
       return @colorCodingParameterDiv.get(0)
     @colorCodingParameterControl.addTo(@map)
 
-  addLegendControl: ->
+  addLegendControl: () ->
+    if @legend?
+      @legend.removeFrom(@map)
+
     @legend = L.control({position: 'bottomright'})
     @legend.onAdd = (map) =>
-      div = $(require("./Legend.hbs")())
-      #$(div).load(@ctx.apiUrl + "maps/legend?#{query}")
-      return div.get(0)
+      @legendDiv = $('<div/>')
+      @changeLegendControl("Visit")
+      return @legendDiv.get(0)
 
     @legend.addTo(@map)
+
+  changeLegendControl: (type) ->
+    if @legendDiv?
+      if type.toLowerCase() == "turbidity"
+        html = require("./TurbidityLegend.hbs")()
+      else if type.toLowerCase() == "temperature"
+        html = require("./TemperatureLegend.hbs")()
+      else if type.toLowerCase() == "ph"
+        html = require("./pHLegend.hbs")()
+      else if type.toLowerCase() == "oxygen"
+        html = require("./OxygenLegend.hbs")()
+      else
+        html = require("./VisitLegend.hbs")()
+      @legendDiv.html(html)
+
+  fetchMap: (type) ->
+    @changeLegendControl(type)
+
+    #TODO
+    # query the map for the right layer based on type
+    #if type.toLowerCase() == "turbidity"
+    #  ...
+    #else if type.toLowerCase() == "temperature"
+    #  ...
+    #else if type.toLowerCase() == "ph"
+    #  ...
+    #else if type.toLowerCase() == "oxygen"
+    #  ...
+    #else
+    #  ...
 
 
 
