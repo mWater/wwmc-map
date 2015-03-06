@@ -10,19 +10,19 @@ module.exports = class SpeciesTab extends Tab
       if visitData.macroinvertebrate_data_available
         data.push {
           date: visitData.date,
-          caddisflies: visitData.caddisflies,
-          dobsonflies: visitData.dobsonflies,
-          mayflies: visitData.mayflies,
-          stoneflies: visitData.stoneflies,
+          caddisflies: visitData.caddisflies_present,
+          dobsonflies: visitData.dobsonflies_present,
+          mayflies: visitData.mayflies_present,
+          stoneflies: visitData.stoneflies_present,
 
-          craneflies: visitData.craneflies,
-          dragonflies: visitData.dragonflies,
-          scuds: visitData.scuds,
+          craneflies: visitData.craneflies_present,
+          dragonflies: visitData.dragonflies_present,
+          scuds: visitData.scuds_present,
 
-          leeches: visitData.leeches,
-          midges: visitData.midges,
-          pounchsnails: visitData.pounchsnails,
-          tubiflexworms: visitData.tubiflexworms
+          leeches: visitData.leeches_present,
+          midges: visitData.midges_present,
+          pounchsnails: visitData.pounch_snails_present,
+          tubiflexworms: visitData.tubiflex_worms_present
         }
 
     @content.html(require("./SpeciesTab.hbs")({data:data, hasNoData: data.length == 0}))

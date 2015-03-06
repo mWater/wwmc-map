@@ -1,39 +1,51 @@
 <div style="height:350px;">
     <br>
+    {{#if hasNoData}}
+        No data
+    {{else}}
     <table id="historyTable" class="table table-bordered">
         <thead>
         <tr>
             <th>Measures</th>
-            <th>02/05/2015</th>
-            <th>02/25/2015</th>
-            <th>03/05/2015</th>
+            {{#each data}}
+            <th>{{date}}</th>
+            {{/each}}
         </tr>
         </thead>
         <tbody>
         <tr>
             <th scope="row">Turbidity</th>
-            <td>1</td>
-            <td>2</td>
-            <td>3</td>
+            {{#each data}}
+                <td>
+                {{turbidity}}
+                </td>
+            {{/each}}
         </tr>
         <tr>
             <th scope="row">pH</th>
-            <td>5</td>
-            <td>7</td>
-            <td>9</td>
+            {{#each data}}
+                <td>
+                    {{ph}}
+                </td>
+            {{/each}}
         </tr>
         <tr>
             <th scope="row">Temperature</th>
-            <td>48</td>
-            <td>50</td>
-            <td>46</td>
+            {{#each data}}
+                <td>
+                    {{waterTemperature}}
+                </td>
+            {{/each}}
         </tr>
         <tr>
             <th scope="row">Oxygen</th>
-            <td>15</td>
-            <td>38</td>
-            <td>12</td>
+            {{#each data}}
+                <td>
+                    {{dissolvedOxygen}}
+                </td>
+            {{/each}}
         </tr>
         </tbody>
     </table>
+    {{/if}}
 </div>
