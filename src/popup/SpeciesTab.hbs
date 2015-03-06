@@ -1,69 +1,129 @@
 <div style="height:350px;">
 <br>
+{{#if hasNoData}}
+No data
+{{else}}
 <table id="speciesTable" class="table table-bordered table-condensed">
     <thead>
     <tr>
         <th>Species</th>
-        <th>02/25/2015</th>
-        <th>03/05/2015</th>
+        {{#each data}}
+            <th>{{date}}</th>
+        {{/each}}
     </tr>
     </thead>
     <tbody>
     <tr class="success">
         <th scope="row">Caddisflies</th>
-        <td><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></td>
-        <td>x</td>
+        {{#each data}}
+            <td>
+            {{#if caddisflies}}
+            <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+            {{/if}}
+            </td>
+        {{/each}}
     </tr>
     <tr class="success">
         <th scope="row">Dobsonflies</th>
-        <td></td>
-        <td>x</td>
+        {{#each data}}
+        <td>
+            {{#if dobsonflies}}
+            <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+            {{/if}}
+        </td>
+        {{/each}}
     </tr>
     <tr class="success">
         <th scope="row">Mayflies</th>
-        <td>x</td>
-        <td>x</td>
+        {{#each data}}
+        <td>
+            {{#if mayflies}}
+            <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+            {{/if}}
+        </td>
+        {{/each}}
     </tr>
     <tr class="success">
         <th scope="row">Stoneflies</th>
-        <td>x</td>
-        <td>x</td>
+        {{#each data}}
+        <td>
+            {{#if stoneflies}}
+            <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+            {{/if}}
+        </td>
+        {{/each}}
     </tr>
     <tr class="warning">
         <th scope="row">Craneflies</th>
-        <td>x</td>
-        <td>x</td>
+        {{#each data}}
+        <td>
+            {{#if craneflies}}
+            <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+            {{/if}}
+        </td>
+        {{/each}}
     </tr>
     <tr class="warning">
         <th scope="row">Dragonflies</th>
-        <td>x</td>
-        <td>x</td>
+        {{#each data}}
+        <td>
+            {{#if dragonflies}}
+            <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+            {{/if}}
+        </td>
+        {{/each}}
     </tr>
     <tr class="warning">
         <th scope="row">Scuds</th>
-        <td></td>
-        <td>x</td>
+        {{#each data}}
+        <td>
+            {{#if scuds}}
+            <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+            {{/if}}
+        </td>
+        {{/each}}
     </tr>
     <tr class="danger">
         <th scope="row">Leeches</th>
-        <td>x</td>
-        <td>x</td>
+        {{#each data}}
+        <td>
+            {{#if leeches}}
+            <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+            {{/if}}
+        </td>
+        {{/each}}
     </tr>
     <tr class="danger">
         <th scope="row">Midges</th>
-        <td></td>
-        <td>x</td>
+        {{#each data}}
+        <td>
+            {{#if midges}}
+            <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+            {{/if}}
+        </td>
+        {{/each}}
     </tr>
     <tr class="danger">
         <th scope="row">Pounch snails</th>
-        <td>x</td>
-        <td>x</td>
+        {{#each data}}
+        <td>
+            {{#if pounchsnails}}
+            <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+            {{/if}}
+        </td>
+        {{/each}}
     </tr>
     <tr class="danger">
         <th scope="row">Tubiflex worms</th>
-        <td>x</td>
-        <td>x</td>
+        {{#each data}}
+        <td>
+            {{#if tubiflexworms}}
+            <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+            {{/if}}
+        </td>
+        {{/each}}
     </tr>
     </tbody>
 </table>
+{{/if}}
 </div>
