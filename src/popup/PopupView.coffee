@@ -38,10 +38,11 @@ module.exports = class PopupView extends Backbone.View
         @$el.find("#image").html(thumbnail)
 
     # Get the visits data
-    siteId = "bc4c8e83-bae6-4d35-936d-5c7e3d1b3d81"
+    siteId = @site._id
     filter = "{\"type\":\"wwmc_visit\",\"site\":\"#{siteId}\"}"
     fullPath = @ctx.apiUrl + "entities?filter=#{filter}"
     $.getJSON fullPath, (visitsData) =>
+      visitsData = _.sortBy(visitsData, "date")
       @visitsData = visitsData
       @dataTab.setVisitsData(visitsData)
       @photosTab.setVisitsData(visitsData)

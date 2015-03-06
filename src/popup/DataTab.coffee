@@ -32,29 +32,29 @@ module.exports = class DataTab extends Tab
 
       @data.push(measures)
 
-    measures = {
-      date: "2007-08-09"
-      ph: 7.2,
-      turbidity: 33,
-      turbidityUnit: "turbidity_JTU",
-      waterTemperature: 75,
-      waterTemperatureUnit: "temperature_F",
-      dissolvedOxygen: 8,
-      dissolvedOxygenUnit: "dissolved_oxygen_ppm"
-    }
-    @data.push(measures)
+    #measures = {
+    #  date: "2007-08-09"
+    #  ph: 7.2,
+    #  turbidity: 33,
+    #  turbidityUnit: "turbidity_JTU",
+    #  waterTemperature: 75,
+    #  waterTemperatureUnit: "temperature_F",
+    #  dissolvedOxygen: 8,
+    #  dissolvedOxygenUnit: "dissolved_oxygen_ppm"
+    #}
+    #@data.push(measures)
 
-    measures = {
-      date: "2010-08-09"
-      ph: 6.5,
-      turbidity: 22,
-      turbidityUnit: "turbidity_JTU",
-      waterTemperature: 68,
-      waterTemperatureUnit: "temperature_F",
-      dissolvedOxygen: 40,
-      dissolvedOxygenUnit: "dissolved_oxygen_ppm"
-    }
-    @data.push(measures)
+    #measures = {
+    #  date: "2010-08-09"
+    #  ph: 6.5,
+    #  turbidity: 22,
+    #  turbidityUnit: "turbidity_JTU",
+    #  waterTemperature: 68,
+    #  waterTemperatureUnit: "temperature_F",
+    #  dissolvedOxygen: 40,
+    #  dissolvedOxygenUnit: "dissolved_oxygen_ppm"
+    #}
+    #@data.push(measures)
 
     @content.html(require("./DataTab.hbs")())
 
@@ -89,13 +89,13 @@ module.exports = class DataTab extends Tab
       value = values[0]
       @subContent.html(require("./DataSubTab.hbs")({date: value.date, singleValue: value.valueWithUnit}))
     else if values.length == 2
-      firstValue = values[0]
-      secondValue = values[1]
+      newValue = values[1]
+      oldValue = values[0]
       @subContent.html(require("./DataSubTab.hbs")({
-        firstValue: firstValue.valueWithUnit,
-        firstDate: firstValue.date,
-        secondValue: secondValue.valueWithUnit,
-        secondDate: secondValue.date
+        newValue: newValue.valueWithUnit,
+        newDate: newValue.date,
+        oldValue: oldValue.valueWithUnit,
+        oldDate: oldValue.date
       }))
     else
       @subContent.html(require("./DataSubTab.hbs")({drawGraph: true}))
