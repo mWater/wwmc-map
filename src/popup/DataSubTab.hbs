@@ -1,0 +1,16 @@
+{{#if drawGraph}}
+    <canvas id="dataChart" width="400" height="325"></canvas>
+{{else}}
+    {{#if singleValue}}
+        <br>
+        <h1>{{singleValue}}</h1>
+        <b>Date: </b>{{date}}
+    {{else}}
+        <br>
+        <h1>{{firstValue}}</h1>
+        <b>Date: </b>{{firstDate}}
+        <br>
+        <h3 style="color:#808080">{{secondValue}}</h3>
+        <b>Date: </b>{{secondDate}}
+    {{/if}}
+{{/if}}
