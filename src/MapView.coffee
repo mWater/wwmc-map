@@ -1,5 +1,5 @@
 
-PopupView = require './PopupView'
+PopupView = require './popup/PopupView'
 
 module.exports = class MapView 
   constructor: (options) ->
