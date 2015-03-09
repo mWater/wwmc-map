@@ -34,7 +34,7 @@ module.exports = class PopupView extends Backbone.View
     # Show site photo
     if @site.photo
       if @$el.find("#image").html() == ""
-        thumbnail = "<img class='thumb' src='#{this.ctx.apiUrl}images/" + @site.photo.id + "?h=100' >"
+        thumbnail = "<img height='100' class='thumb' src='#{this.ctx.apiUrl}images/" + @site.photo.id + "?h=100' >"
         @$el.find("#image").html(thumbnail)
 
     # Get the visits data

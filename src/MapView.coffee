@@ -24,7 +24,7 @@ module.exports = class MapView
     $(dataLayer._container).addClass('leaflet-zoom-hide')
 
     # Add grid layer
-    @gridLayer = new L.UtfGrid(@ctx.apiUrl + "maps/tiles/{z}/{x}/{y}.grid.json?type=wwmc_main", { useJsonP: false })
+    @gridLayer = new L.UtfGrid(@ctx.apiUrl + "maps/tiles/{z}/{x}/{y}.grid.json?type=wwmc_main&display=visited", { useJsonP: false })
     @map.addLayer(@gridLayer)
 
     # Handle clicks
@@ -49,7 +49,8 @@ module.exports = class MapView
       popup = L.popup({ minWidth: 420 }) # , offset: [0, -34]
         .setLatLng(L.latLng(site.location.coordinates[1], site.location.coordinates[0]))
         .setContent(popupView.el)
-        .openOn(@map)
+
+      @map.openPopup(popup)
 
 
   # Add control for switching type
@@ -103,7 +104,13 @@ module.exports = class MapView
       else if type.toLowerCase() == "oxygen"
         html = require("./OxygenLegend.hbs")()
       else
-        html = require("./VisitLegend.hbs")()
+        #html = require("./VisitLegend.hbs")()
+        query = "type=wwmc_main&display=visited"
+        html = L.DomUtil.create('div', 'map-info map-legend')
+        fullPath = @ctx.apiUrl + "maps/legend?#{query}"
+        console.log fullPath
+        $(html).load(fullPath)
+
       @legendDiv.html(html)
 
   fetchMap: (type) ->
