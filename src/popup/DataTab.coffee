@@ -8,8 +8,6 @@ module.exports = class DataTab extends Tab
   initialize: ->
     @data = []
 
-    #TODO: Order by Date
-
     for visitData in @visitsData
       measures = {
         date: visitData.date
@@ -31,30 +29,6 @@ module.exports = class DataTab extends Tab
         measures["dissolvedOxygenUnit"] = visitData.dissolved_oxygen.unit
 
       @data.push(measures)
-
-    #measures = {
-    #  date: "2007-08-09"
-    #  ph: 7.2,
-    #  turbidity: 33,
-    #  turbidityUnit: "turbidity_JTU",
-    #  waterTemperature: 75,
-    #  waterTemperatureUnit: "temperature_F",
-    #  dissolvedOxygen: 8,
-    #  dissolvedOxygenUnit: "dissolved_oxygen_ppm"
-    #}
-    #@data.push(measures)
-
-    #measures = {
-    #  date: "2010-08-09"
-    #  ph: 6.5,
-    #  turbidity: 22,
-    #  turbidityUnit: "turbidity_JTU",
-    #  waterTemperature: 68,
-    #  waterTemperatureUnit: "temperature_F",
-    #  dissolvedOxygen: 40,
-    #  dissolvedOxygenUnit: "dissolved_oxygen_ppm"
-    #}
-    #@data.push(measures)
 
     @content.html(require("./DataTab.hbs")())
 
@@ -98,14 +72,19 @@ module.exports = class DataTab extends Tab
         oldDate: oldValue.date
       }))
     else
-      @subContent.html(require("./DataSubTab.hbs")({drawGraph: true}))
+      if values.length <= 20
+        graphWidth = 400
+        graphHeight = 225
+      else
+        graphWidth = 400 + (values.length - 20) * 20
+        graphHeight = 200
+      @subContent.html(require("./DataSubTab.hbs")({drawGraph: true, graphWidth: graphWidth, graphHeight: graphHeight}))
       @renderLineChart(type, values);
 
   renderLineChart: (type, values) ->
     ctx = @subContent.find("#dataChart").get(0).getContext("2d");
 
     options = {
-      label: "My Second dataset",
       fillColor: "rgba(151,187,205,0.2)",
       strokeColor: "rgba(151,187,205,1)",
       pointColor: "rgba(151,187,205,1)",
@@ -128,4 +107,4 @@ module.exports = class DataTab extends Tab
       datasets: datasets
     }
 
-    myLineChart = new Chart(ctx).Line(data)
+    myLineChart = new Chart(ctx).Line(data, {pointDot: true, pointHitDetectionRadius: 2})
