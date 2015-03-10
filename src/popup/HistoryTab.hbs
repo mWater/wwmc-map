@@ -11,6 +11,15 @@
             <th>pH</th>
             <th>Temperature</th>
             <th>Oxygen</th>
+            {{#if hasNitrite}}
+            <th>Nitrite</th>
+            {{/if}}
+            {{#if hasNitrate}}
+            <th>Nitrate</th>
+            {{/if}}
+            {{#if hasPhosphate}}
+            <th>Phosphate</th>
+            {{/if}}
         </tr>
         </thead>
         <tbody>
@@ -21,6 +30,15 @@
                 <td>{{ph}}</td>
                 <td>{{waterTemperature}}</td>
                 <td>{{dissolvedOxygen}}</td>
+                {{#if hasNitrite}}
+                <td>{{nitrite}}</td>
+                {{/if}}
+                {{#if hasNitrate}}
+                <td>{{nitrate}}</td>
+                {{/if}}
+                {{#if hasPhosphate}}
+                <td>{{phosphate}}</td>
+                {{/if}}
             </tr>
         {{/each}}
         </tbody>

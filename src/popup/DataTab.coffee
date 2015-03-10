@@ -28,6 +28,18 @@ module.exports = class DataTab extends Tab
         measures["dissolvedOxygen"] = visitData.dissolved_oxygen.magnitude
         measures["dissolvedOxygenUnit"] = visitData.dissolved_oxygen.unit
 
+      if visitData.nitrate?
+        measures["nitrate"] = visitData.nitrate.magnitude
+        measures["nitrateUnit"] = visitData.nitrate.unit
+
+      if visitData.nitrite?
+        measures["nitrite"] = visitData.nitrite.magnitude
+        measures["nitriteUnit"] = visitData.nitrite.unit
+
+      if visitData.phosphate?
+        measures["phosphate"] = visitData.phosphate.magnitude
+        measures["phosphateUnit"] = visitData.phosphate.unit
+
       @data.push(measures)
 
     @content.html(require("./DataTab.hbs")())
@@ -56,9 +68,25 @@ module.exports = class DataTab extends Tab
         if value.dissolvedOxygen?
           valueWithUnit = value.dissolvedOxygen + " " + unitToString(type, value.dissolvedOxygenUnit)
           values.push({date: value.date, value: value.dissolvedOxygen, valueWithUnit: valueWithUnit})
+    else if type == "nitrite"
+      for value in @data
+        if value.nitrite?
+          valueWithUnit = value.nitrite + " " + unitToString(type, value.nitriteUnit)
+          values.push({date: value.date, value: value.nitrite, valueWithUnit: valueWithUnit})
+    else if type == "nitrate"
+      for value in @data
+        if value.nitrate?
+          valueWithUnit = value.nitrate + " " + unitToString(type, value.nitrateUnit)
+          values.push({date: value.date, value: value.nitrate, valueWithUnit: valueWithUnit})
+    else if type == "phosphate"
+      for value in @data
+        if value.phosphate?
+          valueWithUnit = value.phosphate + " " + unitToString(type, value.phosphateUnit)
+          values.push({date: value.date, value: value.phosphate, valueWithUnit: valueWithUnit})
+
 
     if values.length == 0
-      @subContent.html("No data")
+      @subContent.html("<br>No data")
     else if values.length == 1
       value = values[0]
       @subContent.html(require("./DataSubTab.hbs")({date: value.date, singleValue: value.valueWithUnit}))
@@ -100,6 +128,12 @@ module.exports = class DataTab extends Tab
       options["label"] = "Water Temperature"
     else if type == 'dissolved_oxygen'
       options["label"] = "Dissolved Oxygen"
+    else if type == 'nitrate'
+      options["label"] = "Nitrate"
+    else if type == 'nitrite'
+      options["label"] = "Nitrite"
+    else if type == 'phosphate'
+      options["label"] = "Phosphate"
 
     datasets = [options]
     data = {
