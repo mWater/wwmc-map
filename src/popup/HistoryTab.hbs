@@ -7,44 +7,22 @@
         <thead>
         <tr>
             <th>Measures</th>
-            {{#each data}}
-            <th>{{date}}</th>
-            {{/each}}
+            <th>Turbidity</th>
+            <th>pH</th>
+            <th>Temperature</th>
+            <th>Oxygen</th>
         </tr>
         </thead>
         <tbody>
-        <tr>
-            <th scope="row">Turbidity</th>
-            {{#each data}}
-                <td>
-                {{turbidity}}
-                </td>
-            {{/each}}
-        </tr>
-        <tr>
-            <th scope="row">pH</th>
-            {{#each data}}
-                <td>
-                    {{ph}}
-                </td>
-            {{/each}}
-        </tr>
-        <tr>
-            <th scope="row">Temperature</th>
-            {{#each data}}
-                <td>
-                    {{waterTemperature}}
-                </td>
-            {{/each}}
-        </tr>
-        <tr>
-            <th scope="row">Oxygen</th>
-            {{#each data}}
-                <td>
-                    {{dissolvedOxygen}}
-                </td>
-            {{/each}}
-        </tr>
+        {{#each data}}
+            <tr>
+                <th scope="row">{{date}}</th>
+                <td>{{turbidity}}</td>
+                <td>{{ph}}</td>
+                <td>{{waterTemperature}}</td>
+                <td>{{dissolvedOxygen}}</td>
+            </tr>
+        {{/each}}
         </tbody>
     </table>
     {{/if}}

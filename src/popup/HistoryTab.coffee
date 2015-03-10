@@ -7,7 +7,7 @@ module.exports = class HistoryTab extends Tab
 
   initialize: ->
     data = []
-    for visitData in @visitsData
+    for visitData in @visitsData.reverse()
       measures = {
         date: visitData.date,
       }
