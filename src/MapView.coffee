@@ -95,22 +95,10 @@ module.exports = class MapView
 
   changeLegendControl: (type) ->
     if @legendDiv?
-      if type.toLowerCase() == "turbidity"
-        html = require("./TurbidityLegend.hbs")()
-      else if type.toLowerCase() == "temperature"
-        html = require("./TemperatureLegend.hbs")()
-      else if type.toLowerCase() == "ph"
-        html = require("./pHLegend.hbs")()
-      else if type.toLowerCase() == "oxygen"
-        html = require("./OxygenLegend.hbs")()
-      else
-        #html = require("./VisitLegend.hbs")()
-        query = "type=wwmc_main&display=visited"
-        html = L.DomUtil.create('div', 'map-info map-legend')
-        fullPath = @ctx.apiUrl + "maps/legend?#{query}"
-        console.log fullPath
-        $(html).load(fullPath)
-
+      query = "type=wwmc_main&display=" + type
+      html = L.DomUtil.create('div', 'map-info map-legend')
+      fullPath = @ctx.apiUrl + "maps/legend?#{query}"
+      $(html).load(fullPath)
       @legendDiv.html(html)
 
   fetchMap: (type) ->
