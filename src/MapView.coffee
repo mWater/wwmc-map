@@ -14,7 +14,7 @@ module.exports = class MapView
     @map.addLayer(@baseLayer)
 
     # Add data layer
-    dataLayer = L.tileLayer(@ctx.apiUrl + "maps/tiles/{z}/{x}/{y}.png?type=wwmc_main")
+    dataLayer = L.tileLayer(@ctx.tileUrl + "?type=wwmc_main")
     dataLayer.setOpacity(0.8)
 
     # TODO hack for non-zoom animated tile layers
@@ -24,7 +24,7 @@ module.exports = class MapView
     $(dataLayer._container).addClass('leaflet-zoom-hide')
 
     # Add grid layer
-    @gridLayer = new L.UtfGrid(@ctx.apiUrl + "maps/tiles/{z}/{x}/{y}.grid.json?type=wwmc_main&display=visited", { useJsonP: false })
+    @gridLayer = new L.UtfGrid(@ctx.gridUrl + "?type=wwmc_main&display=visited", { useJsonP: false })
     @map.addLayer(@gridLayer)
 
     # Handle clicks
