@@ -5,6 +5,7 @@ module.exports = class MapView
   constructor: (options) ->
     @options = options
     @ctx = options.ctx
+    @currentDisplayType = null
 
     @map = L.map(options.el)
     @map.setView([37, 8], 4)
@@ -13,31 +14,42 @@ module.exports = class MapView
     @baseLayer = L.bingLayer("Ao26dWY2IC8PjorsJKFaoR85EPXCnCohrJdisCWXIULAXFo0JAXquGauppTMQbyU", { type: "Road"})
     @map.addLayer(@baseLayer)
 
+    @searchControl = new L.esri.Controls.Geosearch({position: 'topright'}).addTo(@map)
+
+    #@addBaseLayerControl()
+    @addLegendControl()
+    @fetchMap("visited")
+    @addColorCodingParameterControl()
+
+  createDataLayer: (displayType) ->
+    if @currentDisplayType == displayType
+      return
+    @currentDisplayType = displayType
+
+    if @dataLayer
+      @map.removeLayer(@dataLayer)
+    if @gridLayer
+      @map.removeLayer(@gridLayer)
+
     # Add data layer
-    dataLayer = L.tileLayer(@ctx.tileUrl + "?type=wwmc_main")
-    dataLayer.setOpacity(0.8)
+    @dataLayer = L.tileLayer(@ctx.tileUrl + "?type=wwmc_main&display=" + displayType)
+    @dataLayer.setOpacity(0.8)
 
     # TODO hack for non-zoom animated tile layers
     @map._zoomAnimated = false
-    @map.addLayer(dataLayer)
+    @map.addLayer(@dataLayer)
     @map._zoomAnimated = true
-    $(dataLayer._container).addClass('leaflet-zoom-hide')
+
+    $(@dataLayer._container).addClass('leaflet-zoom-hide')
 
     # Add grid layer
-    @gridLayer = new L.UtfGrid(@ctx.gridUrl + "?type=wwmc_main&display=visited", { useJsonP: false })
+    @gridLayer = new L.UtfGrid(@ctx.gridUrl + "?type=wwmc_main&display=" + displayType, { useJsonP: false })
     @map.addLayer(@gridLayer)
 
     # Handle clicks
     @gridLayer.on 'click', (ev) =>
       if ev.data and ev.data.id
         @handleMarkerClick(ev.data.id)
-
-    @searchControl = new L.esri.Controls.Geosearch({position: 'topright'}).addTo(@map)
-
-    #@addBaseLayerControl()
-    @addLegendControl()
-    @fetchMap("Visit")
-    @addColorCodingParameterControl()
 
 
   handleMarkerClick: (id) ->
@@ -101,8 +113,9 @@ module.exports = class MapView
       $(html).load(fullPath)
       @legendDiv.html(html)
 
-  fetchMap: (type) ->
-    @changeLegendControl(type)
+  fetchMap: (displayType) ->
+    @changeLegendControl(displayType)
+    @createDataLayer(displayType)
 
     #TODO
     # query the map for the right layer based on type
