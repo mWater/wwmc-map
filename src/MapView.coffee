@@ -87,8 +87,7 @@ module.exports = class MapView
       @colorCodingParameterDiv = $(require("./ColorCodingParameterControl.hbs")())
 
       @colorCodingParameterDiv.find("#selector").on 'change', (e) =>
-        selected = $('#selector option').filter(':selected').text()
-        @fetchMap(selected)
+        @fetchMap(@colorCodingParameterDiv.find("#selector").val())
 
       return @colorCodingParameterDiv.get(0)
     @colorCodingParameterControl.addTo(@map)
