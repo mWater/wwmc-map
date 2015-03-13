@@ -99,7 +99,7 @@ module.exports = class MapView
     @legend = L.control({position: 'bottomright'})
     @legend.onAdd = (map) =>
       @legendDiv = $('<div/>')
-      @changeLegendControl("Visit")
+      @changeLegendControl("visited")
       return @legendDiv.get(0)
 
     @legend.addTo(@map)
