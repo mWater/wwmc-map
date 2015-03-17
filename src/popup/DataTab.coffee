@@ -137,7 +137,7 @@ module.exports = class DataTab extends Tab
 
     datasets = [options]
     data = {
-      labels: _.pluck(values, "date"),
+      labels: _.map(_.pluck(values, "date"), (d) -> if d then d.substr(0,10)),
       datasets: datasets
     }
 
