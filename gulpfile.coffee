@@ -102,7 +102,9 @@ gulp.task "build", gulp.parallel([
   "copy_esri_images"
 ])
 
-gulp.task 'deploy', gulp.series('build', -> publishBucket("wwmc-map.mwater.co"))
+gulp.task 'deploy', gulp.series('build', 
+  (-> publishBucket("wwmc-map.mwater.co")), 
+  (-> publishBucket("map.monitorwater.org")))
 
 gulp.task "default", gulp.series("build")
 

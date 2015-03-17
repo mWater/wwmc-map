@@ -7,8 +7,8 @@ module.exports = class MapView
     @ctx = options.ctx
     @currentDisplayType = null
 
-    @map = L.map(options.el)
-    @map.setView([37, 8], 4)
+    @map = L.map(options.el, { zoomControl: false })
+    @map.setView([37, -8], 3)
     
     # Add base layer
     @baseLayer = L.bingLayer("Ao26dWY2IC8PjorsJKFaoR85EPXCnCohrJdisCWXIULAXFo0JAXquGauppTMQbyU", { type: "Road"})
@@ -16,7 +16,22 @@ module.exports = class MapView
 
     @searchControl = new L.esri.Controls.Geosearch({position: 'topright'}).addTo(@map)
 
-    #@addBaseLayerControl()
+    # Add brand
+    brand = L.control({position: 'topleft'})
+    brand.onAdd = (map) ->
+      html = '''
+      <div class="map-brand">
+        <a href="http://monitorwater.org" target="_blank">
+          <img id="brand" src="img/brand.png" style="cursor: pointer;">
+        </a>
+      </div>
+      '''
+      return $(html).get(0)
+    brand.addTo(@map)
+
+    # Add zoom control
+    L.control.zoom({ position: "bottomleft" }).addTo(@map)
+
     @addLegendControl()
     @fetchMap("visited")
     @addColorCodingParameterControl()

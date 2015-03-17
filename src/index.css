@@ -8,3 +8,13 @@
 }
 
 .map-legend { text-align: left; line-height: 18px; color: #555; }
+
+.map-brand {
+    padding: 6px 8px;
+    font: 14px/16px Arial, Helvetica, sans-serif;
+    /*background: white;*/
+    opacity: 0.8;
+    /*box-shadow: 0 0 20px rgba(0,0,0,0.4);*/
+    border-radius: 5px;
+    /*margin-bottom: 20px !important;*/
+}
