@@ -10,7 +10,7 @@ fs = require 'fs'
 
 publishBucket = (bucket) ->
   # Read credentials
-  aws = JSON.parse(fs.readFileSync("/home/clayton/.ssh/aws-credentials.json"))
+  aws = JSON.parse(fs.readFileSync("../aws-credentials.json"))
   aws.bucket = bucket
 
   publisher = awspublish.create(aws)

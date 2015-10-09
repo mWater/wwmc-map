@@ -126,7 +126,7 @@ module.exports = class MapView
 
   addFilterControl: () ->
     date = new Date()
-    years = [2007..date.getFullYear()]
+    years = [date.getFullYear()..2007]
 
     if @filter?
       @filter.removeFrom(@map)
