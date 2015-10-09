@@ -6,6 +6,7 @@ module.exports = class MapView
     @options = options
     @ctx = options.ctx
     @currentDisplayType = null
+    @currentYearFilter = null
 
     @map = L.map(options.el, { zoomControl: false })
     @map.setView([37, -8], 3)
@@ -33,12 +34,14 @@ module.exports = class MapView
     L.control.zoom({ position: "bottomleft" }).addTo(@map)
 
     @addLegendControl()
-    @fetchMap("visited")
+    @addFilterControl()
+    @fetchMap()
 
-  createDataLayer: (displayType) ->
-    if @currentDisplayType == displayType
+  createDataLayer: (displayType, yearFilter) ->
+    if @currentDisplayType == displayType and @currentYearFilter == yearFilter
       return
     @currentDisplayType = displayType
+    @currentYearFilter = yearFilter
 
     if @dataLayer
       @map.removeLayer(@dataLayer)
@@ -46,7 +49,10 @@ module.exports = class MapView
       @map.removeLayer(@gridLayer)
 
     # Add data layer
-    @dataLayer = L.tileLayer(@ctx.tileUrl + "?type=wwmc_main&display=" + displayType)
+    url = @ctx.tileUrl + "?type=wwmc_main&display=" + displayType
+    if yearFilter != ""
+      url += "&year=" + yearFilter
+    @dataLayer = L.tileLayer(url)
     @dataLayer.setOpacity(0.8)
 
     # TODO hack for non-zoom animated tile layers
@@ -57,7 +63,10 @@ module.exports = class MapView
     $(@dataLayer._container).addClass('leaflet-zoom-hide')
 
     # Add grid layer
-    @gridLayer = new L.UtfGrid(@ctx.gridUrl + "?type=wwmc_main&display=" + displayType, { useJsonP: false })
+    url = @ctx.gridUrl + "?type=wwmc_main&display=" + displayType
+    if yearFilter != ""
+      url += "&year=" + yearFilter
+    @gridLayer = new L.UtfGrid(url, { useJsonP: false })
     @map.addLayer(@gridLayer)
 
     # Handle clicks
@@ -103,7 +112,7 @@ module.exports = class MapView
       @changeLegendControl("visited")
 
       @legendDiv.find("#selector").on 'change', (e) =>
-        @fetchMap(@legendDiv.find("#selector").val())
+        @fetchMap()
 
       return @legendDiv.get(0)
 
@@ -115,6 +124,27 @@ module.exports = class MapView
       fullPath = @ctx.apiUrl + "maps/legend?#{query}"
       @legendDiv.find("#legend_contents").load(fullPath)
 
-  fetchMap: (displayType) ->
-    @changeLegendControl(displayType)
-    @createDataLayer(displayType)
+  addFilterControl: () ->
+    date = new Date()
+    years = [2007..date.getFullYear()]
+
+    if @filter?
+      @filter.removeFrom(@map)
+
+    @filter = L.control({position: 'bottomright'})
+    @filter.onAdd = (map) =>
+      @filterDiv = $(require("./FilterControl.hbs")({years: years}))
+
+      @filterDiv.find("#selector").on 'change', (e) =>
+        @fetchMap()
+
+      return @filterDiv.get(0)
+
+    @filter.addTo(@map)
+
+  fetchMap: () ->
+    displayType = @legendDiv.find("#selector").val()
+    filter = @filterDiv.find("#selector").val()
+    if displayType != @currentDisplayType
+      @changeLegendControl(displayType)
+    @createDataLayer(displayType, filter)

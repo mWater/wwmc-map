@@ -1,0 +1,15 @@
+<div class="panel panel-default map-legend">
+    <div class="panel-heading">
+        <h3 class="panel-title">
+            Filter by year
+        </h3>
+    </div>
+    <div class="panel-body">
+        <select id="selector" class="form-control">
+            <option value="">All</option>
+            {{#each years}}
+            <option value="{{this}}">{{this}}</option>
+            {{/each}}
+        </select>
+    </div>
+</div>
