@@ -17,28 +17,28 @@ module.exports = class DataTab extends Tab
         measures["ph"] = visitData.ph
 
       if visitData.turbidity?
-        measures["turbidity"] = visitData.turbidity.magnitude
-        measures["turbidityUnit"] = visitData.turbidity.unit
+        measures["turbidity"] = visitData.turbidity.quantity
+        measures["turbidityUnit"] = visitData.turbidity.units
 
       if visitData.water_temperature?
-        measures["waterTemperature"] = visitData.water_temperature.magnitude
-        measures["waterTemperatureUnit"] = visitData.water_temperature.unit
+        measures["waterTemperature"] = visitData.water_temperature.quantity
+        measures["waterTemperatureUnit"] = visitData.water_temperature.units
 
       if visitData.dissolved_oxygen?
-        measures["dissolvedOxygen"] = visitData.dissolved_oxygen.magnitude
-        measures["dissolvedOxygenUnit"] = visitData.dissolved_oxygen.unit
+        measures["dissolvedOxygen"] = visitData.dissolved_oxygen.quantity
+        measures["dissolvedOxygenUnit"] = visitData.dissolved_oxygen.units
 
       if visitData.nitrate?
-        measures["nitrate"] = visitData.nitrate.magnitude
-        measures["nitrateUnit"] = visitData.nitrate.unit
+        measures["nitrate"] = visitData.nitrate.quantity
+        measures["nitrateUnit"] = visitData.nitrate.units
 
       if visitData.nitrite?
-        measures["nitrite"] = visitData.nitrite.magnitude
-        measures["nitriteUnit"] = visitData.nitrite.unit
+        measures["nitrite"] = visitData.nitrite.quantity
+        measures["nitriteUnit"] = visitData.nitrite.units
 
       if visitData.phosphate?
-        measures["phosphate"] = visitData.phosphate.magnitude
-        measures["phosphateUnit"] = visitData.phosphate.unit
+        measures["phosphate"] = visitData.phosphate.quantity
+        measures["phosphateUnit"] = visitData.phosphate.units
 
       @data.push(measures)
 
