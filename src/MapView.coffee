@@ -76,6 +76,10 @@ module.exports = class MapView
 
 
   handleMarkerClick: (id) ->
+    # To test species and photos
+    # id = 'b2017c0f-33f1-40d6-aecb-37f8d359a64c'
+    # To test nitrite, nitrate and phosphate
+    # id = '72add3df-31db-482d-a554-d44d30cc954d'
     # Get site
     $.getJSON @ctx.apiUrl + "entities/#{id}", (site) =>
       # Create popup

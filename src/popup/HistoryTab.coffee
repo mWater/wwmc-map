@@ -19,27 +19,32 @@ module.exports = class HistoryTab extends Tab
         measures["ph"] = visitData.ph
 
       if visitData.turbidity?
-        measures["turbidity"] = visitData.turbidity.magnitude + " " + unitToString("turbidity", visitData.turbidity.unit)
+        measures["turbidity"] = visitData.turbidity.quantity + " " + unitToString("turbidity", visitData.turbidity.units)
 
       if visitData.water_temperature?
-        measures["waterTemperature"] = visitData.water_temperature.magnitude + " " + unitToString("water_temperature", visitData.water_temperature.unit)
+        measures["waterTemperature"] = visitData.water_temperature.quantity + " " + unitToString("water_temperature", visitData.water_temperature.units)
 
       if visitData.dissolved_oxygen?
-        measures["dissolvedOxygen"] = visitData.dissolved_oxygen.magnitude + " " + unitToString("dissolved_oxygen", visitData.dissolved_oxygen.unit)
+        measures["dissolvedOxygen"] = visitData.dissolved_oxygen.quantity + " " + unitToString("dissolved_oxygen", visitData.dissolved_oxygen.units)
 
       if visitData.nitrite?
         hasNitrite = true
-        measures["nitrite"] = visitData.nitrite.magnitude + " " + unitToString("nitrite", visitData.nitrite.unit)
+        measures["nitrite"] = visitData.nitrite.quantity + " " + unitToString("nitrite", visitData.nitrite.units)
 
       if visitData.nitrate?
         hasNitrate = true
-        measures["nitrate"] = visitData.nitrate.magnitude + " " + unitToString("nitrate", visitData.nitrate.unit)
+        measures["nitrate"] = visitData.nitrate.quantity + " " + unitToString("nitrate", visitData.nitrate.units)
 
       if visitData.phosphate?
         hasPhosphate = true
-        measures["phosphate"] = visitData.phosphate.magnitude + " " + unitToString("phosphate", visitData.phosphate.unit)
+        measures["phosphate"] = visitData.phosphate.quantity + " " + unitToString("phosphate", visitData.phosphate.units)
 
       data.push(measures)
+
+    for d in data
+      d.hasPhosphate = hasPhosphate
+      d.hasNitrate = hasNitrate
+      d.hasNitrite = hasNitrite
 
     @content.html(require("./HistoryTab.hbs")({
       data:data, hasNoData: data.length == 0,
