@@ -17,18 +17,18 @@ module.exports = class MapView
 
     @searchControl = new L.esri.Controls.Geosearch({position: 'topright'}).addTo(@map)
 
-    # Add brand
-    brand = L.control({position: 'topleft'})
-    brand.onAdd = (map) ->
-      html = '''
-      <div class="map-brand">
-        <a href="http://monitorwater.org" target="_blank">
-          <img id="brand" src="img/brand.png" style="cursor: pointer;">
-        </a>
-      </div>
-      '''
-      return $(html).get(0)
-    brand.addTo(@map)
+    # # Add brand
+    # brand = L.control({position: 'topleft'})
+    # brand.onAdd = (map) ->
+    #   html = '''
+    #   <div class="map-brand">
+    #     <a href="http://monitorwater.org" target="_blank">
+    #       <img id="brand" src="img/brand.png" style="cursor: pointer;">
+    #     </a>
+    #   </div>
+    #   '''
+    #   return $(html).get(0)
+    # brand.addTo(@map)
 
     # Add zoom control
     L.control.zoom({ position: "bottomleft" }).addTo(@map)
@@ -113,7 +113,7 @@ module.exports = class MapView
     @legend = L.control({position: 'bottomright'})
     @legend.onAdd = (map) =>
       @legendDiv = $(require("./LegendControl.hbs")())
-      @changeLegendControl("visited")
+      @changeLegendControl("ph")
 
       @legendDiv.find("#selector").on 'change', (e) =>
         @fetchMap()
