@@ -46,6 +46,8 @@ module.exports = class PopupView extends Backbone.View
     responseFilter = "{\"form\":\"#{formId}\",\"data.#{entityQuestionId}.value\":\"#{siteId}\"}"
     fullPath = @ctx.apiUrl + "responses?filter=#{responseFilter}"
     $.getJSON fullPath, (responses) =>
+      # Sort responses
+      responses = _.sortBy(responses, (r) -> r.submittedOn)
       visitsData = createVisitsData(responses)
 
       @visitsData = visitsData
