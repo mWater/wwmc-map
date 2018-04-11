@@ -28,6 +28,10 @@ module.exports = class DataTab extends Tab
         measures["dissolvedOxygen"] = visitData.dissolved_oxygen.quantity
         measures["dissolvedOxygenUnit"] = visitData.dissolved_oxygen.units
 
+      if visitData.dissolved_oxygen_saturation?
+        measures["dissolvedOxygenSaturation"] = visitData.dissolved_oxygen_saturation.quantity
+        measures["dissolvedOxygenSaturationUnit"] = visitData.dissolved_oxygen_saturation.units
+
       if visitData.nitrate?
         measures["nitrate"] = visitData.nitrate.quantity
         measures["nitrateUnit"] = visitData.nitrate.units
@@ -68,6 +72,11 @@ module.exports = class DataTab extends Tab
         if value.dissolvedOxygen?
           valueWithUnit = value.dissolvedOxygen + " " + unitToString(type, value.dissolvedOxygenUnit)
           values.push({date: value.date, value: value.dissolvedOxygen, valueWithUnit: valueWithUnit})
+    else if type == "dissolved_oxygen_saturation"
+      for value in @data
+        if value.dissolvedOxygenSaturation?
+          valueWithUnit = value.dissolvedOxygenSaturation + " " + unitToString(type, value.dissolvedOxygenSaturaionUnit)
+          values.push({date: value.date, value: value.dissolvedOxygenSaturation, valueWithUnit: valueWithUnit})
     else if type == "nitrite"
       for value in @data
         if value.nitrite?
@@ -128,6 +137,8 @@ module.exports = class DataTab extends Tab
       options["label"] = "Water Temperature"
     else if type == 'dissolved_oxygen'
       options["label"] = "Dissolved Oxygen"
+    else if type == 'dissolved_oxygen_saturation'
+      options["label"] = "Dissolved Oxygen Saturation"
     else if type == 'nitrate'
       options["label"] = "Nitrate"
     else if type == 'nitrite'

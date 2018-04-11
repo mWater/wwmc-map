@@ -65,7 +65,8 @@ questionAndFields = [
 
   {questionId: 'f4725a40f1474bd6a9c16df63865e1d8', field: 'turbidity'}
   {questionId: 'd5cf3fc485164dd5b9ef0edbaacfdeac', field: 'water_temperature'}
-  {questionId: 'ea33bee55ce24dc1a2eaab2c5a6e679b', field: 'dissolved_oxygen'}
+  {questionId: '446ad384f0d64fc9baf2b810c5fba2ac', field: 'dissolved_oxygen'}
+  {questionId: 'ea33bee55ce24dc1a2eaab2c5a6e679b', field: 'dissolved_oxygen_saturation'}
   {questionId: 'e05e0afdff824cf3bbc3aefcfadc96ee', field: 'ph'}
   #{questionId: 'dd639fb14f60480b9935f51f80a13a7e', field: 'salinity'}
 

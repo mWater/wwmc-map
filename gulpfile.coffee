@@ -1,3 +1,5 @@
+_ = require 'lodash'
+path = require 'path'
 gulp = require 'gulp'
 gutil = require 'gulp-util'
 browserify = require 'browserify'
@@ -7,6 +9,8 @@ rework = require 'gulp-rework'
 reworkNpm = require 'rework-npm'
 awspublish = require 'gulp-awspublish'
 fs = require 'fs'
+webpack = require('webpack')
+WebpackDevServer = require 'webpack-dev-server'
 
 publishBucket = (bucket) ->
   # Read credentials
@@ -22,6 +26,71 @@ publishBucket = (bucket) ->
     .pipe(publisher.cache())
     .pipe(publisher.sync())    
     .pipe(awspublish.reporter())
+
+
+makeWebpackConfig = -> {
+  entry: ['./src/index.coffee'],
+  devtool: "eval",
+  output: {
+    filename: 'index.js',
+    path: path.resolve(__dirname, 'dist', 'js')
+  },
+  module: {
+    rules: [
+      {
+        test: /\.coffee$/,
+        use: [ 'coffee-loader' ]
+      }
+      {   
+        test: /\.hbs$/
+        loader: "handlebars-loader" 
+      }
+    ]
+  }
+  resolve: {
+    extensions: [".coffee", ".js", ".json"]
+  },
+  externals: {
+    xlsx: "XLSX",
+    jquery: "$",
+    lodash: '_',
+    underscore: '_',
+    backbone: 'Backbone',
+    leaflet: "L"
+  }
+}
+
+gulp.task 'webpack_release', (done) ->
+  webpackConfig = makeWebpackConfig()
+
+  webpackConfig.mode = "production"
+
+  # External source map
+  webpackConfig.devtool = 'nosources-source-map'
+
+  webpack(webpackConfig).run (error, stats) ->
+    if error
+      gutil.log("Error", error)
+    else
+      done()  
+
+gulp.task 'webpack_watch', ->
+  webpackConfig = makeWebpackConfig()
+
+  webpackConfig.mode = "development"
+
+  webpackConfig.output.publicPath = 'http://localhost:3001/js/'
+
+  webpackConfig.entry.unshift('webpack-dev-server/client?http://localhost:3001');
+
+  compiler = webpack(webpackConfig)
+
+  new WebpackDevServer(compiler, { contentBase: "dist", publicPath: "/js/" }).listen 3001, "localhost", (err) =>
+    if err 
+      throw new gutil.PluginError("webpack-dev-server", err)
+
+    # Server listening
+    gutil.log("[webpack-dev-server]", "http://localhost:3001/index.html")
 
 
 gulp.task "browserify", ->
@@ -87,11 +156,8 @@ gulp.task 'copy_assets', ->
   return gulp.src("assets/**/*")
     .pipe(gulp.dest('dist/'))
 
-gulp.task "watch", ->
-  return gulp.watch("./src/**", ["build"])
-
 gulp.task "build", gulp.parallel([
-  "browserify"
+  "webpack_release"
   "libs_js"
   "libs_css"
   "copy_select2_images"
@@ -101,6 +167,8 @@ gulp.task "build", gulp.parallel([
   "index_css"
   "copy_esri_images"
 ])
+
+gulp.task "watch", gulp.series("build", "webpack_watch")
 
 gulp.task 'deploy', gulp.series('build', 
   (-> publishBucket("wwmc-map.mwater.co")), 

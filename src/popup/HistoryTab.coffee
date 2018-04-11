@@ -27,6 +27,9 @@ module.exports = class HistoryTab extends Tab
       if visitData.dissolved_oxygen?
         measures["dissolvedOxygen"] = visitData.dissolved_oxygen.quantity + " " + unitToString("dissolved_oxygen", visitData.dissolved_oxygen.units)
 
+      if visitData.dissolved_oxygen_saturation?
+        measures["dissolvedOxygenSaturation"] = visitData.dissolved_oxygen_saturation.quantity + " " + unitToString("dissolved_oxygen_saturation", visitData.dissolved_oxygen_saturation.units)
+
       if visitData.nitrite?
         hasNitrite = true
         measures["nitrite"] = visitData.nitrite.quantity + " " + unitToString("nitrite", visitData.nitrite.units)
