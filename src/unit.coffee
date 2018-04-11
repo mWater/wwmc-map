@@ -22,7 +22,7 @@ existingUnits =
     {"id":"NHN3drA","label":{"en":"mg/L-NO2","_base":"en"}}
     {"id":"ZpKrFN4","label":{"en":"mg/L-P","_base":"en"}},
     {"id":"z63Yxfm","label":{"en":"mg/L-PO3","_base":"en"}}
-    {"id":"tEXD8lc","label":{"en":"$","_base":"en"}}
+    {"id":"tEXD8lc","label":{"en":"%","_base":"en"}}
   ]
 
 # measure is of no use with the new technique, but I've kept it just in case

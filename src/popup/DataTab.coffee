@@ -1,5 +1,6 @@
 Tab = require('./Tab')
 unitToString = require('./../unit').unitToString
+moment = require 'moment'
 
 module.exports = class DataTab extends Tab
   constructor: (content) ->
@@ -10,7 +11,8 @@ module.exports = class DataTab extends Tab
 
     for visitData in @visitsData
       measures = {
-        date: visitData.date
+        date: moment(visitData.date, moment.ISO_8601).format("ll")
+
       }
 
       if visitData.ph?

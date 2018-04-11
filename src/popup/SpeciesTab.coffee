@@ -1,4 +1,5 @@
 Tab = require('./Tab')
+moment = require 'moment'
 
 module.exports = class SpeciesTab extends Tab
   constructor: (content) ->
@@ -9,7 +10,7 @@ module.exports = class SpeciesTab extends Tab
     for visitData in @visitsData
       if visitData.macroinvertebrate_data_available
         data.push {
-          date: visitData.date,
+          date: moment(visitData.date, moment.ISO_8601).format("ll"),
           caddisflies: visitData.caddisflies_present,
           dobsonflies: visitData.dobsonflies_present,
           mayflies: visitData.mayflies_present,

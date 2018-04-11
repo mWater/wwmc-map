@@ -1,4 +1,5 @@
 Tab = require('./Tab')
+moment = require 'moment'
 
 module.exports = class PhotosTab extends Tab
   constructor: (content) ->
@@ -14,7 +15,7 @@ module.exports = class PhotosTab extends Tab
           photoIds.push(photo.id)
         data.push({
           photoIds: photoIds,
-          date: visitData.date
+          date: moment(visitData.date, moment.ISO_8601).format("ll")
         })
 
     @content.html(require("./PhotosTab.hbs")({data:data, hasNoData: data.length == 0}))
