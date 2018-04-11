@@ -15,12 +15,12 @@ WebpackDevServer = require 'webpack-dev-server'
 publishBucket = (bucket) ->
   # Read credentials
   aws = JSON.parse(fs.readFileSync("../aws-credentials.json"))
-  aws.bucket = bucket
+  aws.params = { Bucket: bucket }
 
   publisher = awspublish.create(aws)
   headers = { 'Cache-Control': 'no-cache, must-revalidate' }
   
-  return gulp.src('./dist/**/*.*')
+  return gulp.src('./dist/**')
     .pipe(awspublish.gzip())
     .pipe(publisher.publish(headers))
     .pipe(publisher.cache())
