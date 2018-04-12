@@ -11,8 +11,8 @@ module.exports = class DataTab extends Tab
 
     for visitData in @visitsData
       measures = {
-        date: moment(visitData.date, moment.ISO_8601).format("ll")
-
+        date: visitData.date
+        formattedDate: if visitData.date.length <= 10 then moment(visitData.date, moment.ISO_8601).format("ll") else moment(visitData.date, moment.ISO_8601).format("lll")
       }
 
       if visitData.ph?
@@ -63,52 +63,52 @@ module.exports = class DataTab extends Tab
     if type == "ph"
       for value in @data
         if value.ph?
-          values.push({date: value.date, value: value.ph, valueWithUnit: value.ph})
+          values.push({date: value.date, formattedDate: value.formattedDate, value: value.ph, valueWithUnit: value.ph})
     else if type == "water_temperature"
       for value in @data
         if value.waterTemperature?
           valueWithUnit = value.waterTemperature + " " + unitToString(type, value.waterTemperatureUnit)
-          values.push({date: value.date, value: value.waterTemperature, valueWithUnit: valueWithUnit})
+          values.push({date: value.date, formattedDate: value.formattedDate, value: value.waterTemperature, valueWithUnit: valueWithUnit})
     else if type == "dissolved_oxygen"
       for value in @data
         if value.dissolvedOxygen?
           valueWithUnit = value.dissolvedOxygen + " " + unitToString(type, value.dissolvedOxygenUnit)
-          values.push({date: value.date, value: value.dissolvedOxygen, valueWithUnit: valueWithUnit})
+          values.push({date: value.date, formattedDate: value.formattedDate, value: value.dissolvedOxygen, valueWithUnit: valueWithUnit})
     else if type == "dissolved_oxygen_saturation"
       for value in @data
         if value.dissolvedOxygenSaturation?
           valueWithUnit = value.dissolvedOxygenSaturation + " " + unitToString(type, value.dissolvedOxygenSaturaionUnit)
-          values.push({date: value.date, value: value.dissolvedOxygenSaturation, valueWithUnit: valueWithUnit})
+          values.push({date: value.date, formattedDate: value.formattedDate, value: value.dissolvedOxygenSaturation, valueWithUnit: valueWithUnit})
     else if type == "nitrite"
       for value in @data
         if value.nitrite?
           valueWithUnit = value.nitrite + " " + unitToString(type, value.nitriteUnit)
-          values.push({date: value.date, value: value.nitrite, valueWithUnit: valueWithUnit})
+          values.push({date: value.date, formattedDate: value.formattedDate, value: value.nitrite, valueWithUnit: valueWithUnit})
     else if type == "nitrate"
       for value in @data
         if value.nitrate?
           valueWithUnit = value.nitrate + " " + unitToString(type, value.nitrateUnit)
-          values.push({date: value.date, value: value.nitrate, valueWithUnit: valueWithUnit})
+          values.push({date: value.date, formattedDate: value.formattedDate, value: value.nitrate, valueWithUnit: valueWithUnit})
     else if type == "phosphate"
       for value in @data
         if value.phosphate?
           valueWithUnit = value.phosphate + " " + unitToString(type, value.phosphateUnit)
-          values.push({date: value.date, value: value.phosphate, valueWithUnit: valueWithUnit})
+          values.push({date: value.date, formattedDate: value.formattedDate, value: value.phosphate, valueWithUnit: valueWithUnit})
 
 
     if values.length == 0
       @subContent.html("<br>No data")
     else if values.length == 1
       value = values[0]
-      @subContent.html(require("./DataSubTab.hbs")({date: value.date, singleValue: value.valueWithUnit}))
+      @subContent.html(require("./DataSubTab.hbs")({date: value.formattedDate, singleValue: value.valueWithUnit}))
     else if values.length == 2
       newValue = values[1]
       oldValue = values[0]
       @subContent.html(require("./DataSubTab.hbs")({
         newValue: newValue.valueWithUnit,
-        newDate: newValue.date,
+        newDate: newValue.formattedDate,
         oldValue: oldValue.valueWithUnit,
-        oldDate: oldValue.date
+        oldDate: oldValue.formattedDate
       }))
     else
       if values.length <= 20

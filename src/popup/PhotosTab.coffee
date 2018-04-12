@@ -15,7 +15,7 @@ module.exports = class PhotosTab extends Tab
           photoIds.push(photo.id)
         data.push({
           photoIds: photoIds,
-          date: moment(visitData.date, moment.ISO_8601).format("ll")
+          date: if visitData.date.length <= 10 then moment(visitData.date, moment.ISO_8601).format("ll") else moment(visitData.date, moment.ISO_8601).format("lll")
         })
 
     @content.html(require("./PhotosTab.hbs")({data:data, hasNoData: data.length == 0}))

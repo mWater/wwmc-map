@@ -13,7 +13,7 @@ module.exports = class HistoryTab extends Tab
     hasPhosphate = false
     for visitData in @visitsData.reverse()
       measures = {
-        date: moment(visitData.date, moment.ISO_8601).format("ll")
+        date: if visitData.date.length <= 10 then moment(visitData.date, moment.ISO_8601).format("ll") else moment(visitData.date, moment.ISO_8601).format("lll")
       }
 
       if visitData.ph?
