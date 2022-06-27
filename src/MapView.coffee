@@ -10,6 +10,8 @@ module.exports = class MapView
 
     @map = L.map(options.el, { zoomControl: false })
     @map.setView([37, -8], 3)
+
+    @mapType = 'wwmc_main'
     
     # Add base layer
     @baseLayer = L.bingLayer("Ao26dWY2IC8PjorsJKFaoR85EPXCnCohrJdisCWXIULAXFo0JAXquGauppTMQbyU", { type: "Road"})
@@ -35,13 +37,14 @@ module.exports = class MapView
 
     @addLegendControl()
     @addFilterControl()
-    @fetchMap()
+    @fetchMap(@mapType)
 
-  createDataLayer: (displayType, yearFilter) ->
-    if @currentDisplayType == displayType and @currentYearFilter == yearFilter
+  createDataLayer: (mapType, displayType, yearFilter) ->
+    if @currentDisplayType == displayType and @currentYearFilter == yearFilter and @mapType == mapType
       return
     @currentDisplayType = displayType
     @currentYearFilter = yearFilter
+    @mapType = mapType
 
     if @dataLayer
       @map.removeLayer(@dataLayer)
@@ -49,7 +52,7 @@ module.exports = class MapView
       @map.removeLayer(@gridLayer)
 
     # Add data layer
-    url = @ctx.tileUrl + "?type=wwmc_main&display=" + displayType
+    url = @ctx.tileUrl + "?type="+@mapType+"&display=" + displayType
     if yearFilter != ""
       url += "&year=" + yearFilter
     @dataLayer = L.tileLayer(url)
@@ -63,7 +66,7 @@ module.exports = class MapView
     $(@dataLayer._container).addClass('leaflet-zoom-hide')
 
     # Add grid layer
-    url = @ctx.gridUrl + "?type=wwmc_main&display=" + displayType
+    url = @ctx.gridUrl + "?type="+@mapType+"&display=" + displayType
     if yearFilter != ""
       url += "&year=" + yearFilter
     @gridLayer = new L.UtfGrid(url, { useJsonP: false })
@@ -113,7 +116,7 @@ module.exports = class MapView
     @legend = L.control({position: 'bottomright'})
     @legend.onAdd = (map) =>
       @legendDiv = $(require("./LegendControl.hbs")())
-      @changeLegendControl("ph")
+      @changeLegendControl(@mapType, "ph")
 
       @legendDiv.find("#selector").on 'change', (e) =>
         @fetchMap()
@@ -121,12 +124,40 @@ module.exports = class MapView
       return @legendDiv.get(0)
 
     @legend.addTo(@map)
+  
+  addMapTypeSwitcher: () -> 
+    if @mapTypeSwitcher?
+      @mapTypeSwitcher.removeFrom(@map)
+    
+    @mapTypeSwitcher = L.control({position: 'topleft'})
+    @mapTypeSwitcher.onAdd = (map) =>
+      @mapTypeSwitcherDiv = $(require("./Switcher.hbs")({isPlogging: @mapType == "wwmc_plogging"}))
 
-  changeLegendControl: (type) ->
+      @mapTypeSwitcherDiv.find('#type_wwmc_main').on('click', (e) => 
+        # @mapType = 'wwmc_main'
+        @fetchMap('wwmc_main')
+      )
+      @mapTypeSwitcherDiv.find('#type_wwmc_plogging').on('click', (e) => 
+        # @mapType = 'wwmc_plogging'
+        @fetchMap('wwmc_plogging')
+      )
+
+      return @mapTypeSwitcherDiv.get(0)
+    
+    @mapTypeSwitcher.addTo(@map)
+
+  changeLegendControl: (mapType, type) ->
     if @legendDiv?
-      query = "type=wwmc_main&display=" + type
+      query = "type="+mapType+"&display=" + type
       fullPath = @ctx.apiUrl + "maps/legend?#{query}"
       @legendDiv.find("#legend_contents").load(fullPath)
+
+      if mapType == "wwmc_plogging"
+        @legendDiv.find(".panel-heading").hide()
+        @filterDiv.hide()
+      else
+        @legendDiv.find(".panel-heading").show()
+        @filterDiv?.show()
 
   addFilterControl: () ->
     date = new Date()
@@ -140,15 +171,17 @@ module.exports = class MapView
       @filterDiv = $(require("./FilterControl.hbs")({years: years}))
 
       @filterDiv.find("#selector").on 'change', (e) =>
-        @fetchMap()
+        e.stopPropagation()
+        @fetchMap(@mapType)
 
       return @filterDiv.get(0)
 
     @filter.addTo(@map)
 
-  fetchMap: () ->
+  fetchMap: (mapType) ->
     displayType = @legendDiv.find("#selector").val()
     filter = @filterDiv.find("#selector").val()
-    if displayType != @currentDisplayType
-      @changeLegendControl(displayType)
-    @createDataLayer(displayType, filter)
+    if displayType != @currentDisplayType or mapType != @mapType
+      @changeLegendControl(mapType, displayType)
+    @createDataLayer(mapType, displayType, filter)
+    @addMapTypeSwitcher()
