@@ -3,6 +3,7 @@ DataTab = require('./DataTab')
 SpeciesTab = require('./SpeciesTab')
 PhotosTab = require('./PhotosTab')
 HistoryTab = require('./HistoryTab')
+PloggingTab = require('./PloggingTab')
 
 module.exports = class PopupView extends Backbone.View
   constructor: (options) ->
@@ -18,6 +19,7 @@ module.exports = class PopupView extends Backbone.View
     @photosTab = new PhotosTab(@$el.find("#photosSection"))
     @speciesTab = new SpeciesTab(@$el.find("#speciesSection"))
     @historyTab = new HistoryTab(@$el.find("#historySection"))
+    @ploggingTab = new PloggingTab(@$el.find("#ploggingSection"))
 
     #Only create the visual for a tab when required
     @dataTab.show()
@@ -29,6 +31,9 @@ module.exports = class PopupView extends Backbone.View
     )
     @$el.find("#historyTab").on('show.bs.tab', (e) =>
       @historyTab.show()
+    )
+    @$el.find("#ploggingTab").on('show.bs.tab', (e) =>
+      @ploggingTab.show()
     )
 
     # Show site photo
@@ -42,6 +47,7 @@ module.exports = class PopupView extends Backbone.View
     siteId = @site._id
     formId = 'd1c360082dfc46b9bb1fd0ff582d6c06'
     entityQuestionId = 'ee96dc4554b2431d8a2d7a8b418c23f8'
+
     # All the responses with the right form and the right siteId for the entityQuestion
     responseFilter = "{\"form\":\"#{formId}\",\"data.#{entityQuestionId}.value\":\"#{siteId}\"}"
     fullPath = @ctx.apiUrl + "responses?filter=#{responseFilter}"
@@ -55,6 +61,18 @@ module.exports = class PopupView extends Backbone.View
       @photosTab.setVisitsData(visitsData)
       @speciesTab.setVisitsData(visitsData)
       @historyTab.setVisitsData(visitsData)
+    
+    ploggingFormId = '3203d0e5b2ec47418fc7a37466dff7ba'
+    ploggingEntityQuestionId = '3f7902a73e4a4f908be0bf17368f9afa'
+
+    responseFilter = "{\"form\":\"#{ploggingFormId}\",\"data.#{ploggingEntityQuestionId}.value.code\":\"#{@site.code}\"}"
+    fullPath = @ctx.apiUrl + "responses?filter=#{responseFilter}"
+    
+    $.getJSON fullPath, (responses) =>
+      # Sort responses
+      responses = _.sortBy(responses, (r) -> r.submittedOn)
+      visitsData = createPloggingData(responses)
+      @ploggingTab.setVisitsData(visitsData)
 
     this
 
@@ -114,3 +132,40 @@ createVisitsData = (responses) ->
     return visitData
   )
 
+
+ploggingFields = [
+  {questionId: '9e40eb8f50c8417bb0338c884f3916a1', field: 'date'}
+  {questionId: '1f4481c41936423fb957cb705c464211', field: 'participants'}
+  {questionId: '9085b1fa84fe4aefb94bd8961ecb124b', field: 'duration'}
+  {questionId: '180c81c0d6ae4fa2958dacc8a03972d8', field: 'distance'}
+  {questionId: '07f214b201ff439799b64bf2be51d53d', field: 'pieces_collected'}
+  {questionId: '2b6235f00fd24ebfba827a3a5cf14211', field: 'bags_used'}
+  {questionId: '619ed15f7a4e44bfbcc0bf5fc71fe98e', field: 'total_weight'}
+
+  {questionId: '5ce187b6fa8b484a9aacf4e10fc7db4c', field: 'before_image'}
+  {questionId: '2c3c478fd2ce42a3b269a069191ec83f', field: 'after_image'}
+]
+
+createPloggingData = (responses) ->
+  return _.map(responses, (response) ->
+    ploggingData = {}
+
+    for ploggingField in ploggingFields
+      answer = response.data[ploggingField.questionId]
+      # If the answer exists
+      if answer? and answer.value?
+        # And it's a choice
+        if ploggingField.choiceId?
+          # And there can be multiple values
+          if ploggingField.multi
+            # We check if the choiceId is part of the value
+            ploggingData[ploggingField.field] = answer.value.indexOf(ploggingField.choiceId) >= 0
+          else
+            # We check if the choiceId is equal to the value
+            ploggingData[ploggingField.field] = answer.value == ploggingField.choiceId
+        else
+          # We simply assign the value (good for all measures)
+          ploggingData[ploggingField.field] = answer.value
+
+    return ploggingData
+  )

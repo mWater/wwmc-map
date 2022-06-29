@@ -23,6 +23,10 @@ existingUnits =
     {"id":"ZpKrFN4","label":{"en":"mg/L-P","_base":"en"}},
     {"id":"z63Yxfm","label":{"en":"mg/L-PO3","_base":"en"}}
     {"id":"tEXD8lc","label":{"en":"%","_base":"en"}}
+    {"id":"DLqgXC9","label":{"en":"Miles","_base":"en"}}
+    {"id":"y9gsgVm","label":{"en":"Km","_base":"en"}}
+    {"id":"mw4DvEz","label":{"en":"lbs","_base":"en"}}
+    {"id":"atja8NP","label":{"en":"Kg","_base":"en"}}
   ]
 
 # measure is of no use with the new technique, but I've kept it just in case

@@ -119,7 +119,8 @@ module.exports = class MapView
       @changeLegendControl(@mapType, "ph")
 
       @legendDiv.find("#selector").on 'change', (e) =>
-        @fetchMap()
+        e.stopPropagation()
+        @fetchMap(@mapType)
 
       return @legendDiv.get(0)
 
