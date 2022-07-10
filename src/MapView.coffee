@@ -88,7 +88,7 @@ module.exports = class MapView
       # Create popup
       popupView = new PopupView(ctx: @ctx, site: site).render()
 
-      popup = L.popup({ minWidth: 420 }) # , offset: [0, -34]
+      popup = L.popup({ minWidth: 500 }) # , offset: [0, -34]
         .setLatLng(L.latLng(site.location.coordinates[1], site.location.coordinates[0]))
         .setContent(popupView.el)
 

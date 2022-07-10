@@ -22,3 +22,33 @@
     border-radius: 5px;
     /*margin-bottom: 20px !important;*/
 }
+
+.btn.orange {
+    background-color: #e99855;
+    border-radius: 0;
+    color: #fff;
+    text-transform: uppercase;
+    min-height: 60px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.shadow {
+    box-shadow: 0 10px 0 0 rgb(0 0 0 / 13%);
+}
+
+.shadow:hover {
+    box-shadow: 0 10px 0 0 rgb(0 0 0 / 25%);
+}
+
+.btn.orange.active {
+    background-color: #e07013;
+}
+
+.btn.orange.active.shadow {
+    box-shadow: 0 10px 0 0 rgb(0 0 0 / 13%);
+}
+
+.btn.orange.active.shadow:hover {
+    box-shadow: 0 10px 0 0 rgb(0 0 0 / 25%);
+}
