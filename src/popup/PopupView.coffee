@@ -3,7 +3,8 @@ DataTab = require('./DataTab')
 SpeciesTab = require('./SpeciesTab')
 PhotosTab = require('./PhotosTab')
 HistoryTab = require('./HistoryTab')
-PloggingTab = require('./PloggingTab')
+WaterActionTab = require('./WaterActionTab')
+moment = require 'moment'
 
 module.exports = class PopupView extends Backbone.View
   constructor: (options) ->
@@ -19,10 +20,10 @@ module.exports = class PopupView extends Backbone.View
     @photosTab = new PhotosTab(@$el.find("#photosSection"))
     @speciesTab = new SpeciesTab(@$el.find("#speciesSection"))
     @historyTab = new HistoryTab(@$el.find("#historySection"))
-    @ploggingTab = new PloggingTab(@$el.find("#ploggingSection"))
+    @waterActionTab = new WaterActionTab(@$el.find("#waterActionSection"))
 
     #Only create the visual for a tab when required
-    @dataTab.show()
+    @historyTab.show()
     @$el.find("#speciesTab").on('show.bs.tab', (e) =>
       @speciesTab.show()
     )
@@ -32,8 +33,8 @@ module.exports = class PopupView extends Backbone.View
     @$el.find("#historyTab").on('show.bs.tab', (e) =>
       @historyTab.show()
     )
-    @$el.find("#ploggingTab").on('show.bs.tab', (e) =>
-      @ploggingTab.show()
+    @$el.find("#waterActionTab").on('show.bs.tab', (e) =>
+      @waterActionTab.show()
     )
 
     # Show site photo
@@ -51,29 +52,83 @@ module.exports = class PopupView extends Backbone.View
     # All the responses with the right form and the right siteId for the entityQuestion
     responseFilter = "{\"form\":\"#{formId}\",\"data.#{entityQuestionId}.value\":\"#{siteId}\"}"
     fullPath = @ctx.apiUrl + "responses?filter=#{responseFilter}"
-    $.getJSON fullPath, (responses) =>
-      # Sort responses
-      responses = _.sortBy(responses, (r) -> r.submittedOn)
-      visitsData = createVisitsData(responses)
 
-      @visitsData = visitsData
-      @dataTab.setVisitsData(visitsData)
-      @photosTab.setVisitsData(visitsData)
-      @speciesTab.setVisitsData(visitsData)
-      @historyTab.setVisitsData(visitsData)
-    
     ploggingFormId = '3203d0e5b2ec47418fc7a37466dff7ba'
     ploggingEntityQuestionId = '3f7902a73e4a4f908be0bf17368f9afa'
-
-    responseFilter = "{\"form\":\"#{ploggingFormId}\",\"data.#{ploggingEntityQuestionId}.value.code\":\"#{@site.code}\"}"
-    fullPath = @ctx.apiUrl + "responses?filter=#{responseFilter}"
     
-    $.getJSON fullPath, (responses) =>
-      # Sort responses
-      responses = _.sortBy(responses, (r) -> r.submittedOn)
-      visitsData = createPloggingData(responses)
-      @ploggingTab.setVisitsData(visitsData)
+    flushingFormId = '2e5325c13c80416db098e77a14eef2c3'
+    flushingEntityQuestionId = '3f7902a73e4a4f908be0bf17368f9afa'
 
+    ploggingResponseFilter = "{\"form\":\"#{ploggingFormId}\",\"data.#{ploggingEntityQuestionId}.value.code\":\"#{@site.code}\"}"
+    ploggingFullPath = @ctx.apiUrl + "responses?filter=#{ploggingResponseFilter}"
+
+    flushingResponseFilter = "{\"form\":\"#{flushingFormId}\",\"data.#{flushingEntityQuestionId}.value.code\":\"#{@site.code}\"}"
+    flushingFullPath = @ctx.apiUrl + "responses?filter=#{flushingResponseFilter}"
+
+    $.getJSON fullPath, (responses) =>
+      $.getJSON ploggingFullPath, (ploggingResponses) =>
+        $.getJSON flushingFullPath, (flushingResponses) =>
+          # Sort responses
+          responses = _.sortBy(responses, (r) -> r.submittedOn)
+          visitsData = createVisitsData(responses)
+
+          ploggingResponses = _.sortBy(ploggingResponses, (r) -> r.submittedOn)
+          ploggingData = createWaterActionData(ploggingResponses, ploggingFields)
+          
+          flushingResponses = _.sortBy(flushingResponses, (r) -> r.submittedOn)
+          flushingData = createWaterActionData(flushingResponses, flushingFields)
+          console.log(flushingData)
+          @waterActionTab.setVisitsData({
+            plogging: ploggingData,
+            flushing: flushingData,
+          })
+
+          photoData = []
+          @visitsData = visitsData
+
+          for visitData in @visitsData
+            if visitData.photos? and visitData.photos.length > 0
+              photoIds = []
+              for photo in visitData.photos
+                photoIds.push(photo.id)
+              photoData.push({
+                photoIds: photoIds,
+                date: if visitData.date.length <= 10 then moment(visitData.date, moment.ISO_8601).format("ll") else moment(visitData.date, moment.ISO_8601).format("lll")
+              })
+          
+          for fData in flushingData
+            if fData.pictures? and fData.pictures.length > 0
+              photoIds = []
+              for photo in fData.pictures
+                photoIds.push(photo.id)
+              photoData.push({
+                photoIds: photoIds,
+                date: if fData.date.length <= 10 then moment(fData.date, moment.ISO_8601).format("ll") else moment(fData.date, moment.ISO_8601).format("lll")
+              })
+
+          for fData in ploggingData
+            if fData.before_image? and fData.before_image.length > 0
+              photoIds = []
+              for photo in fData.before_image
+                photoIds.push(photo.id)
+              photoData.push({
+                photoIds: photoIds,
+                date: if fData.date.length <= 10 then moment(fData.date, moment.ISO_8601).format("ll") else moment(fData.date, moment.ISO_8601).format("lll")
+              })
+            if fData.after_image? and fData.after_image.length > 0
+              photoIds = []
+              for photo in fData.after_image
+                photoIds.push(photo.id)
+              photoData.push({
+                photoIds: photoIds,
+                date: if fData.date.length <= 10 then moment(fData.date, moment.ISO_8601).format("ll") else moment(fData.date, moment.ISO_8601).format("lll")
+              })
+          
+          @dataTab.setVisitsData(visitsData)
+          @photosTab.setVisitsData(photoData)
+          @speciesTab.setVisitsData(visitsData)
+          @historyTab.setVisitsData(visitsData)
+    
     this
 
 # Purely hardcoded fields from the form data
@@ -146,26 +201,34 @@ ploggingFields = [
   {questionId: '2c3c478fd2ce42a3b269a069191ec83f', field: 'after_image'}
 ]
 
-createPloggingData = (responses) ->
+
+flushingFields = [
+  {questionId: '9e40eb8f50c8417bb0338c884f3916a1', field: 'date'}
+  {questionId: '1f4481c41936423fb957cb705c464211', field: 'participants'}
+  {questionId: '9085b1fa84fe4aefb94bd8961ecb124b', field: 'duration'}
+  {questionId: 'f41bcf066ccf41598a6decf8f0624984', field: 'pictures'}
+]
+
+createWaterActionData = (responses, fields) ->
   return _.map(responses, (response) ->
     ploggingData = {}
 
-    for ploggingField in ploggingFields
-      answer = response.data[ploggingField.questionId]
+    for field in fields
+      answer = response.data[field.questionId]
       # If the answer exists
       if answer? and answer.value?
         # And it's a choice
-        if ploggingField.choiceId?
+        if field.choiceId?
           # And there can be multiple values
-          if ploggingField.multi
+          if field.multi
             # We check if the choiceId is part of the value
-            ploggingData[ploggingField.field] = answer.value.indexOf(ploggingField.choiceId) >= 0
+            ploggingData[field.field] = answer.value.indexOf(field.choiceId) >= 0
           else
             # We check if the choiceId is equal to the value
-            ploggingData[ploggingField.field] = answer.value == ploggingField.choiceId
+            ploggingData[field.field] = answer.value == field.choiceId
         else
           # We simply assign the value (good for all measures)
-          ploggingData[ploggingField.field] = answer.value
+          ploggingData[field.field] = answer.value
 
     return ploggingData
   )

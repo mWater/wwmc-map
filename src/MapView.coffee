@@ -8,6 +8,8 @@ module.exports = class MapView
     @currentDisplayType = null
     @currentYearFilter = null
 
+    @currentWaterActionFilter = null
+
     @map = L.map(options.el, { zoomControl: false })
     @map.setView([37, -8], 3)
 
@@ -36,14 +38,21 @@ module.exports = class MapView
     L.control.zoom({ position: "bottomleft" }).addTo(@map)
 
     @addLegendControl()
-    @addFilterControl()
+    @addFilterControl(@mapType)
     @fetchMap(@mapType)
 
-  createDataLayer: (mapType, displayType, yearFilter) ->
-    if @currentDisplayType == displayType and @currentYearFilter == yearFilter and @mapType == mapType
-      return
-    @currentDisplayType = displayType
-    @currentYearFilter = yearFilter
+  createDataLayer: (mapType, displayType, filters) ->
+    if mapType == "wwmc_main" 
+      if @currentDisplayType == displayType and @currentYearFilter == filters.yearFilter and @mapType == mapType
+        return
+      @currentDisplayType = displayType
+      @currentYearFilter = filters.yearFilter
+    else
+      if @currentDisplayType == displayType and @currentWaterActionFilter == filters.water_action_type and @mapType == mapType
+        return
+      @currentDisplayType = displayType
+      @currentWaterActionFilter = filters.water_action_type
+
     @mapType = mapType
 
     if @dataLayer
@@ -53,8 +62,11 @@ module.exports = class MapView
 
     # Add data layer
     url = @ctx.tileUrl + "?type="+@mapType+"&display=" + displayType
-    if yearFilter != ""
-      url += "&year=" + yearFilter
+    if filters.yearFilter != ""
+      url += "&year=" + filters.yearFilter
+    if filters.water_action_type != ""
+      url += "&water_action_type=" + filters.water_action_type
+
     @dataLayer = L.tileLayer(url)
     @dataLayer.setOpacity(0.8)
 
@@ -67,8 +79,10 @@ module.exports = class MapView
 
     # Add grid layer
     url = @ctx.gridUrl + "?type="+@mapType+"&display=" + displayType
-    if yearFilter != ""
-      url += "&year=" + yearFilter
+    if filters.yearFilter != ""
+      url += "&year=" + filters.yearFilter
+    if filters.water_action_type != ""
+      url += "&water_action_type=" + filters.water_action_type
     @gridLayer = new L.UtfGrid(url, { useJsonP: false })
     @map.addLayer(@gridLayer)
 
@@ -132,15 +146,16 @@ module.exports = class MapView
     
     @mapTypeSwitcher = L.control({position: 'topleft'})
     @mapTypeSwitcher.onAdd = (map) =>
-      @mapTypeSwitcherDiv = $(require("./Switcher.hbs")({isPlogging: @mapType == "wwmc_plogging"}))
+      @mapTypeSwitcherDiv = $(require("./Switcher.hbs")({isWaterAction: @mapType == "wwmc_water_actions"}))
 
       @mapTypeSwitcherDiv.find('#type_wwmc_main').on('click', (e) => 
         # @mapType = 'wwmc_main'
         @fetchMap('wwmc_main')
       )
-      @mapTypeSwitcherDiv.find('#type_wwmc_plogging').on('click', (e) => 
-        # @mapType = 'wwmc_plogging'
-        @fetchMap('wwmc_plogging')
+      @mapTypeSwitcherDiv.find('#type_wwmc_water_action').on('click', (e) => 
+        # @mapType = 'wwmc_water_actions'
+        @fetchMap('wwmc_water_actions')
+        # @fetchMap('wwmc_water_actions')
       )
 
       return @mapTypeSwitcherDiv.get(0)
@@ -149,18 +164,17 @@ module.exports = class MapView
 
   changeLegendControl: (mapType, type) ->
     if @legendDiv?
-      query = "type="+mapType+"&display=" + type
-      fullPath = @ctx.apiUrl + "maps/legend?#{query}"
-      @legendDiv.find("#legend_contents").load(fullPath)
-
-      if mapType == "wwmc_plogging"
-        @legendDiv.find(".panel-heading").hide()
-        @filterDiv.hide()
+      if mapType == "wwmc_water_actions"
+        @legendDiv.hide()
       else
+        query = "type="+mapType+"&display=" + type
+        fullPath = @ctx.apiUrl + "maps/legend?#{query}"
+        @legendDiv.find("#legend_contents").load(fullPath)
+        @legendDiv.show()
         @legendDiv.find(".panel-heading").show()
         @filterDiv?.show()
 
-  addFilterControl: () ->
+  addFilterControl: (mapType) ->
     date = new Date()
     years = [date.getFullYear()..2007]
 
@@ -168,21 +182,41 @@ module.exports = class MapView
       @filter.removeFrom(@map)
 
     @filter = L.control({position: 'bottomright'})
+    
+
+    if mapType == "wwmc_main"
+      filterDiv = $(require("./FilterControl.hbs")({years: years}))
+    else 
+      filterDiv = $(require("./WaterActionFilterControl.hbs")())
+
     @filter.onAdd = (map) =>
-      @filterDiv = $(require("./FilterControl.hbs")({years: years}))
+      @filterDiv = filterDiv
 
       @filterDiv.find("#selector").on 'change', (e) =>
         e.stopPropagation()
-        @fetchMap(@mapType)
+        @fetchMap(mapType)
 
-      return @filterDiv.get(0)
+      return @filterDiv.get(0)  
 
     @filter.addTo(@map)
 
+
   fetchMap: (mapType) ->
     displayType = @legendDiv.find("#selector").val()
+    filters = {}
     filter = @filterDiv.find("#selector").val()
+
+    if mapType == 'wwmc_main'
+      filters.yearFilter = filter
+    else if mapType == 'wwmc_water_actions'
+      filters.water_action_type = filter or 'plogging'
+
+    if mapType != @mapType
+      @addFilterControl(mapType)
+
     if displayType != @currentDisplayType or mapType != @mapType
       @changeLegendControl(mapType, displayType)
-    @createDataLayer(mapType, displayType, filter)
+
+    @createDataLayer(mapType, displayType, filters)
     @addMapTypeSwitcher()
+    
