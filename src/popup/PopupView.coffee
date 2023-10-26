@@ -204,8 +204,11 @@ ploggingFields = [
 
 flushingFields = [
   {questionId: '9e40eb8f50c8417bb0338c884f3916a1', field: 'date'}
+  {questionId: 'b907c273299a40c8afbfa0fb00ec63bf', field: 'affiliation'}
+  {questionId: '29814a936c6941c7b16a4c8803412f31', field: 'affiliation_name'}
   {questionId: '1f4481c41936423fb957cb705c464211', field: 'participants'}
-  {questionId: '9085b1fa84fe4aefb94bd8961ecb124b', field: 'duration'}
+  # {questionId: '9085b1fa84fe4aefb94bd8961ecb124b', field: 'duration'}
+  {questionId: 'cbe19b8328374cb38da6494ba922f0f3', field: 'poster'}
   {questionId: 'f41bcf066ccf41598a6decf8f0624984', field: 'pictures'}
 ]
 
