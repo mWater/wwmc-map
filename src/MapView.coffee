@@ -1,7 +1,8 @@
 
 PopupView = require './popup/PopupView'
+FlushingPopup = require './popup/FlushingPopup'
 
-module.exports = class MapView 
+module.exports = class MapView
   constructor: (options) ->
     @options = options
     @ctx = options.ctx
@@ -14,7 +15,7 @@ module.exports = class MapView
     @map.setView([37, -8], 3)
 
     @mapType = 'wwmc_main'
-    
+
     # Add base layer
     @baseLayer = L.bingLayer("Ao26dWY2IC8PjorsJKFaoR85EPXCnCohrJdisCWXIULAXFo0JAXquGauppTMQbyU", { type: "Road"})
     @map.addLayer(@baseLayer)
@@ -42,7 +43,7 @@ module.exports = class MapView
     @fetchMap(@mapType)
 
   createDataLayer: (mapType, displayType, filters) ->
-    if mapType == "wwmc_main" 
+    if mapType == "wwmc_main"
       if @currentDisplayType == displayType and @currentYearFilter == filters.yearFilter and @mapType == mapType
         return
       @currentDisplayType = displayType
@@ -98,15 +99,28 @@ module.exports = class MapView
     # To test nitrite, nitrate and phosphate
     # id = '72add3df-31db-482d-a554-d44d30cc954d'
     # Get site
-    $.getJSON @ctx.apiUrl + "entities/surface_water/#{id}", (site) =>
-      # Create popup
-      popupView = new PopupView(ctx: @ctx, site: site).render()
 
-      popup = L.popup({ minWidth: 500 }) # , offset: [0, -34]
-        .setLatLng(L.latLng(site.location.coordinates[1], site.location.coordinates[0]))
-        .setContent(popupView.el)
+    filter = @filterDiv.find("#selector").val()
+    if @mapType == 'wwmc_water_actions' and filter == 'flushing'
+        $.getJSON @ctx.apiUrl + "responses/#{id}", (response) =>
+            # Create popup
+            popupView = new FlushingPopup(ctx: @ctx, response: response).render()
+            console.log(response)
+            popup = L.popup({ minWidth: 500 }) # , offset: [0, -34]
+                .setLatLng(L.latLng(response.data['de5c721a4e0b445c8bf8cccd46cbfcc5'].value.latitude, response.data['de5c721a4e0b445c8bf8cccd46cbfcc5'].value.longitude))
+                .setContent(popupView.el)
 
-      @map.openPopup(popup)
+            @map.openPopup(popup)
+    else
+        $.getJSON @ctx.apiUrl + "entities/surface_water/#{id}", (site) =>
+            # Create popup
+            popupView = new PopupView(ctx: @ctx, site: site).render()
+
+            popup = L.popup({ minWidth: 500 }) # , offset: [0, -34]
+                .setLatLng(L.latLng(site.location.coordinates[1], site.location.coordinates[0]))
+                .setContent(popupView.el)
+
+            @map.openPopup(popup)
 
   # Add control for switching type
   addBaseLayerControl: ->
@@ -139,27 +153,27 @@ module.exports = class MapView
       return @legendDiv.get(0)
 
     @legend.addTo(@map)
-  
-  addMapTypeSwitcher: () -> 
+
+  addMapTypeSwitcher: () ->
     if @mapTypeSwitcher?
       @mapTypeSwitcher.removeFrom(@map)
-    
+
     @mapTypeSwitcher = L.control({position: 'topleft'})
     @mapTypeSwitcher.onAdd = (map) =>
       @mapTypeSwitcherDiv = $(require("./Switcher.hbs")({isWaterAction: @mapType == "wwmc_water_actions"}))
 
-      @mapTypeSwitcherDiv.find('#type_wwmc_main').on('click', (e) => 
+      @mapTypeSwitcherDiv.find('#type_wwmc_main').on('click', (e) =>
         # @mapType = 'wwmc_main'
         @fetchMap('wwmc_main')
       )
-      @mapTypeSwitcherDiv.find('#type_wwmc_water_action').on('click', (e) => 
+      @mapTypeSwitcherDiv.find('#type_wwmc_water_action').on('click', (e) =>
         # @mapType = 'wwmc_water_actions'
         @fetchMap('wwmc_water_actions')
         # @fetchMap('wwmc_water_actions')
       )
 
       return @mapTypeSwitcherDiv.get(0)
-    
+
     @mapTypeSwitcher.addTo(@map)
 
   changeLegendControl: (mapType, type) ->
@@ -182,11 +196,11 @@ module.exports = class MapView
       @filter.removeFrom(@map)
 
     @filter = L.control({position: 'bottomright'})
-    
+
 
     if mapType == "wwmc_main"
       filterDiv = $(require("./FilterControl.hbs")({years: years}))
-    else 
+    else
       filterDiv = $(require("./WaterActionFilterControl.hbs")())
 
     @filter.onAdd = (map) =>
@@ -196,7 +210,7 @@ module.exports = class MapView
         e.stopPropagation()
         @fetchMap(mapType)
 
-      return @filterDiv.get(0)  
+      return @filterDiv.get(0)
 
     @filter.addTo(@map)
 
@@ -219,4 +233,3 @@ module.exports = class MapView
 
     @createDataLayer(mapType, displayType, filters)
     @addMapTypeSwitcher()
-    

@@ -47,54 +47,23 @@ module.exports = class PloggingTab extends Tab
 
         if visitData.pieces_collected?
           measures["pieces_collected"] = visitData.pieces_collected
-        
+
         if visitData.participants?
           measures["participants"] = visitData.participants
-        
+
         if visitData.duration?
           measures["duration"] = durations.filter((d) -> d.id == visitData.duration)[0].label.en
-        
+
         if visitData.bags_used?
           measures["bags_used"] = visitData.bags_used
 
         if visitData.distance?.quantity?
           measures["distance"] = visitData.distance.quantity + " " + unitToString("distance", visitData.distance.units)
-        
+
         if visitData.total_weight?.quantity?
           measures["total_weight"] = visitData.total_weight.quantity + " " + unitToString("total_weight", visitData.total_weight.units)
         data.push(measures)
 
       @subContent.html(require("./PloggingTable.hbs")({
-        data:data, hasNoData: data.length == 0,
-      }))
-    if type == "flushing"
-      data = []
-      if @visitsData["flushing"]
-        for visitData in @visitsData["flushing"].reverse()
-
-          measures = {
-            date: if visitData.date.length <= 10 then moment(visitData.date, moment.ISO_8601).format("ll") else moment(visitData.date, moment.ISO_8601).format("lll")
-          }
-
-          if visitData.affiliation?
-            measures["affiliation"] = affiliations.filter((d) -> d.id == visitData.affiliation)[0].label.en
-          
-          if visitData.participants?
-            measures["participants"] = visitData.participants
-          
-          if visitData.affiliation_name?
-            measures["affiliation_name"] = visitData.affiliation_name
-          
-          if visitData.poster?
-            measures["poster"] = posterOptions.filter((d) -> d.id == visitData.poster)[0].label.en
-
-          # if visitData.distance?.quantity?
-          #   measures["distance"] = visitData.distance.quantity + " " + unitToString("distance", visitData.distance.units)
-          
-          # if visitData.total_weight?.quantity?
-          #   measures["total_weight"] = visitData.total_weight.quantity + " " + unitToString("total_weight", visitData.total_weight.units)
-          data.push(measures)
-
-      @subContent.html(require("./FlushingTable.hbs")({
         data:data, hasNoData: data.length == 0,
       }))
