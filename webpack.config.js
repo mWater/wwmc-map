@@ -1,57 +1,56 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = {
-  entry: './src/index.ts',
-  output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: 'bundle.js',
+  mode: 'development',
+  entry: {
+    main: './src/index.ts',
+    vendor: path.resolve(__dirname, 'vendor/Leaflet.utfGrid.js')
   },
-  resolve: {
-    extensions: ['.ts', '.js', '.hbs'],
-    fallback: {
-      "fs": false,
-      "path": false,
-      "crypto": false
-    }
+  output: {
+    filename: '[name].js',
+    path: path.resolve(__dirname, 'dist'),
   },
   module: {
     rules: [
       {
-        test: /\.ts$/,
+        test: /\.tsx?$/,
         use: 'ts-loader',
         exclude: /node_modules/,
       },
       {
         test: /\.hbs$/,
-        use: 'handlebars-loader',
+        use: [
+          {
+            loader: 'handlebars-loader',
+            options: {
+              helperDirs: [path.resolve(__dirname, 'src/helpers')],
+              partialDirs: [path.resolve(__dirname, 'src/partials')],
+              precompileOptions: {
+                knownHelpersOnly: false,
+              }
+            }
+          }
+        ]
       },
       {
         test: /\.css$/,
         use: ['style-loader', 'css-loader'],
       },
-      {
-        test: /\.(png|jpg|gif|svg)$/,
-        type: 'asset/resource'
-      }
     ],
+  },
+  resolve: {
+    extensions: ['.tsx', '.ts', '.js', '.hbs'],
+    alias: {
+      'handlebars': 'handlebars/runtime'
+    }
+  },
+  devServer: {
+    port: 3000
   },
   plugins: [
     new HtmlWebpackPlugin({
       template: './src/index.html',
     }),
   ],
-  optimization: {
-    minimize: true,
-    minimizer: [new TerserPlugin()],
-  },
-  devServer: {
-    static: {
-      directory: path.join(__dirname, 'dist'),
-    },
-    compress: true,
-    port: 9000,
-    hot: true,
-  },
 }; 

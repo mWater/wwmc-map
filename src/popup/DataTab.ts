@@ -4,6 +4,7 @@ import moment from 'moment';
 import DataTabTemplate from './DataTab.hbs';
 import DataSubTabTemplate from './DataSubTab.hbs';
 import _ from 'lodash';
+import { Chart, ChartConfiguration } from 'chart.js';
 
 interface Quantity {
   quantity: number;
@@ -49,17 +50,16 @@ interface ChartValue {
   valueWithUnit: string;
 }
 
-export default class DataTab extends Tab {
-  private data: Measure[];
-  private subContent: JQuery;
+export class DataTab {
+  private data: any[] = [];
+  private subContent: JQuery = $();
 
-  constructor(content: JQuery) {
-    super(content);
+  constructor(data: any[]) {
+    this.data = data;
+    this.render();
   }
 
   protected initialize(): void {
-    this.data = [];
-
     for (const visitData of this.visitsData as VisitData[]) {
       const measures: Measure = {
         date: visitData.date,
@@ -115,8 +115,8 @@ export default class DataTab extends Tab {
     this.subContent = this.content.find("#subContent");
 
     this.content.find("#selector").on('change', (e: JQuery.Event) => {
-      const selected = $('#selector option').filter(':selected')[0].value;
-      this.render(selected);
+      const selected = $('#selector option').filter(':selected')[0] as HTMLOptionElement;
+      this.render(selected.value);
     });
 
     this.render('ph');
@@ -239,7 +239,11 @@ export default class DataTab extends Tab {
   }
 
   private renderLineChart(type: string, values: ChartValue[]): void {
-    const ctx = this.subContent.find("#dataChart").get(0).getContext("2d");
+    const canvas = this.subContent.find("#dataChart").get(0);
+    if (!canvas) return;
+    
+    const ctx = (canvas as HTMLCanvasElement).getContext("2d");
+    if (!ctx) return;
 
     const options: any = {
       fillColor: "rgba(151,187,205,0.2)",
@@ -268,11 +272,22 @@ export default class DataTab extends Tab {
     }
 
     const datasets = [options];
-    const data = {
-      labels: _.map(_.map(values, "date"), (d: string) => d ? d.substr(0, 10) : ""),
-      datasets
+    const data: ChartConfiguration = {
+      type: 'line',
+      data: {
+        labels: _.map(_.map(values, "date"), (d: string) => d ? d.substr(0, 10) : ""),
+        datasets: datasets
+      },
+      options: {
+        elements: {
+          point: {
+            radius: 2,
+            hitRadius: 2
+          }
+        }
+      }
     };
 
-    new Chart(ctx).Line(data, { pointDot: true, pointHitDetectionRadius: 2 });
+    new Chart(ctx, data);
   }
 } 

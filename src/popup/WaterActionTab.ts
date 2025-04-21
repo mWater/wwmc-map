@@ -53,11 +53,11 @@ const affiliations: Option[] = [
   { "id": "78q4BkC", "label": { "en": "None", "_base": "en" } }
 ];
 
-export default class WaterActionTab extends Tab {
-  private subContent: JQuery;
+export class WaterActionTab {
+  private subContent: JQuery = $();
 
-  constructor(content: JQuery) {
-    super(content);
+  constructor(data: any[]) {
+    this.render(data);
   }
 
   protected initialize(): void {
@@ -65,9 +65,9 @@ export default class WaterActionTab extends Tab {
 
     this.subContent = this.content.find("#subContent");
 
-    this.content.find("#waterActionSelector").on('change', (e) => {
-      const selected = $('#waterActionSelector option').filter(':selected')[0].value;
-      this.render(selected);
+    this.content.find("#waterActionSelector").on('change', (e: JQuery.ChangeEvent) => {
+      const selected = $('#waterActionSelector option').filter(':selected')[0] as HTMLOptionElement;
+      this.render(selected.value);
     });
 
     this.render('plogging');

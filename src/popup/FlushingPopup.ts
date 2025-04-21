@@ -59,19 +59,26 @@ const flushingFields: FlushingField[] = [
 ];
 
 function createFlushingChallengeData(response: Response): FlushingData {
-  const flushingData: FlushingData = {};
+  const flushingData: FlushingData = {
+    date: '', // Initialize required date field
+    affiliation: undefined,
+    affiliation_name: undefined,
+    participants: undefined,
+    poster: undefined,
+    pictures: undefined
+  };
   
   for (const field of flushingFields) {
     const answer = response.data[field.questionId];
     if (answer?.value !== undefined) {
       if (field.choiceId) {
         if (field.multi) {
-          flushingData[field.field] = answer.value.indexOf(field.choiceId) >= 0;
+          (flushingData as any)[field.field] = answer.value.indexOf(field.choiceId) >= 0;
         } else {
-          flushingData[field.field] = answer.value === field.choiceId;
+          (flushingData as any)[field.field] = answer.value === field.choiceId;
         }
       } else {
-        flushingData[field.field] = answer.value;
+        (flushingData as any)[field.field] = answer.value;
       }
     }
   }

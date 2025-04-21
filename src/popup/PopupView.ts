@@ -39,6 +39,7 @@ interface VisitData {
   midges_present?: boolean;
   pounch_snails_present?: boolean;
   tubiflex_worms_present?: boolean;
+  [key: string]: any;
 }
 
 interface PhotoData {
@@ -56,6 +57,7 @@ interface WaterActionData {
   total_weight?: number;
   before_image?: Array<{ id: string }>;
   after_image?: Array<{ id: string }>;
+  [key: string]: any;
 }
 
 interface ResponseData {
@@ -123,7 +125,31 @@ const ploggingFields: QuestionAndField[] = [
 
 function createVisitsData(responses: Response[]): VisitData[] {
   return responses.map(response => {
-    const visitData: VisitData = {};
+    const visitData: VisitData = {
+      date: '',
+      turbidity: undefined,
+      water_temperature: undefined,
+      dissolved_oxygen: undefined,
+      dissolved_oxygen_saturation: undefined,
+      ph: undefined,
+      nitrate: undefined,
+      nitrite: undefined,
+      phosphate: undefined,
+      photos: undefined,
+      macroinvertebrate_data_available: undefined,
+      caddisflies_present: undefined,
+      dobsonflies_present: undefined,
+      mayflies_present: undefined,
+      stoneflies_present: undefined,
+      craneflies_present: undefined,
+      dragonflies_present: undefined,
+      scuds_present: undefined,
+      leeches_present: undefined,
+      midges_present: undefined,
+      pounch_snails_present: undefined,
+      tubiflex_worms_present: undefined
+    };
+    
     for (const questionAndField of questionAndFields) {
       const answer = response.data[questionAndField.questionId];
       if (answer?.value !== undefined) {
@@ -144,7 +170,18 @@ function createVisitsData(responses: Response[]): VisitData[] {
 
 function createWaterActionData(responses: Response[], fields: QuestionAndField[]): WaterActionData[] {
   return responses.map(response => {
-    const ploggingData: WaterActionData = {};
+    const ploggingData: WaterActionData = {
+      date: '',
+      participants: undefined,
+      duration: undefined,
+      distance: undefined,
+      pieces_collected: undefined,
+      bags_used: undefined,
+      total_weight: undefined,
+      before_image: undefined,
+      after_image: undefined
+    };
+    
     for (const field of fields) {
       const answer = response.data[field.questionId];
       if (answer?.value !== undefined) {
@@ -167,12 +204,12 @@ export default class PopupView extends Backbone.View {
   private options: PopupViewOptions;
   private ctx: { apiUrl: string };
   private site: Site;
-  private dataTab: DataTab;
-  private photosTab: PhotosTab;
-  private speciesTab: SpeciesTab;
-  private historyTab: HistoryTab;
-  private waterActionTab: WaterActionTab;
-  private visitsData: VisitData[];
+  private dataTab: DataTab = null!;
+  private photosTab: PhotosTab = null!;
+  private speciesTab: SpeciesTab = null!;
+  private historyTab: HistoryTab = null!;
+  private waterActionTab: WaterActionTab = null!;
+  private visitsData: VisitData[] = [];
 
   constructor(options: PopupViewOptions) {
     super();
