@@ -29,16 +29,16 @@ publishBucket = (bucket) ->
 
 
 makeWebpackConfig = -> {
-  entry: ['./src/index.coffee'],
-  devtool: "eval",
+  entry: ['./src/index.coffee']
+  devtool: "eval"
   output: {
-    filename: 'index.js',
+    filename: 'index.js'
     path: path.resolve(__dirname, 'dist', 'js')
-  },
+  }
   module: {
     rules: [
       {
-        test: /\.coffee$/,
+        test: /\.coffee$/
         use: [ 'coffee-loader' ]
       }
       {   
@@ -49,47 +49,39 @@ makeWebpackConfig = -> {
   }
   resolve: {
     extensions: [".coffee", ".js", ".json"]
-  },
+  }
   externals: {
-    xlsx: "XLSX",
-    jquery: "$",
-    lodash: '_',
-    underscore: '_',
-    backbone: 'Backbone',
-    leaflet: "L"
+    'jquery': 'jQuery'
+    'lodash': 'window._'
+    'underscore': 'window._'
+    'backbone': 'window.Backbone'
+    'leaflet': 'L'
   }
 }
 
 gulp.task 'webpack_release', (done) ->
   webpackConfig = makeWebpackConfig()
-
-  webpackConfig.mode = "production"
-
-  # External source map
-  webpackConfig.devtool = 'nosources-source-map'
+  # Remove mode which isn't supported in Webpack 2
+  # webpackConfig.mode = "production"
+  webpackConfig.devtool = 'source-map'
 
   webpack(webpackConfig).run (error, stats) ->
     if error
       gutil.log("Error", error)
     else
-      done()  
+      done()
 
 gulp.task 'webpack_watch', ->
   webpackConfig = makeWebpackConfig()
-
-  webpackConfig.mode = "development"
-
+  # Remove mode which isn't supported in Webpack 2
+  # webpackConfig.mode = "development"
   webpackConfig.output.publicPath = 'http://localhost:3001/js/'
-
-  webpackConfig.entry.unshift('webpack-dev-server/client?http://localhost:3001');
+  webpackConfig.entry.unshift('webpack-dev-server/client?http://localhost:3001')
 
   compiler = webpack(webpackConfig)
-
   new WebpackDevServer(compiler, { contentBase: "dist", publicPath: "/js/" }).listen 3001, "localhost", (err) =>
     if err 
       throw new gutil.PluginError("webpack-dev-server", err)
-
-    # Server listening
     gutil.log("[webpack-dev-server]", "http://localhost:3001/index.html")
 
 
@@ -116,11 +108,10 @@ gulp.task "libs_css", ->
 gulp.task "libs_js", ->
   return gulp.src([
     "bower_components/jquery/dist/jquery.js"
-    "bower_components/bootstrap/dist/js/bootstrap.js"
     "bower_components/lodash/dist/lodash.js"
     "bower_components/backbone/backbone.js"
+    "bower_components/bootstrap/dist/js/bootstrap.js"
     "bower_components/select2/select2.js"
-    # TODO compress
     "bower_components/leaflet/dist/leaflet-src.js"
     "bower_components/leaflet-plugins/layer/tile/Bing.js"
     "bower_components/Chart.js/Chart.min.js"
@@ -156,7 +147,7 @@ gulp.task 'copy_assets', ->
   return gulp.src("assets/**/*")
     .pipe(gulp.dest('dist/'))
 
-gulp.task "build", gulp.parallel([
+gulp.task "build", [
   "webpack_release"
   "libs_js"
   "libs_css"
@@ -166,15 +157,17 @@ gulp.task "build", gulp.parallel([
   "copy_assets"
   "index_css"
   "copy_esri_images"
-])
+]
 
-gulp.task "watch", gulp.series("build", "webpack_watch")
+gulp.task "watch", ["build"], ->
+  gulp.start "webpack_watch"
 
-gulp.task 'deploy', gulp.series('build', 
-  (-> publishBucket("wwmc-map.mwater.co")), 
-  (-> publishBucket("map.monitorwater.org")))
+gulp.task "deploy", ["build"], ->
+  publishBucket("wwmc-map.mwater.co")
+  .on 'end', ->
+    publishBucket("map.monitorwater.org")
 
-gulp.task "default", gulp.series("build")
+gulp.task "default", ["build"]
 
 # Shim non-browserify friendly libraries to allow them to be 'require'd
 shim = (instance) ->
@@ -182,7 +175,8 @@ shim = (instance) ->
     jquery: './jquery-shim'
     lodash: './lodash-shim'
     underscore: './lodash-shim'
-    backbone: './backbone-shim' 
+    backbone: './backbone-shim'
+    leaflet: './leaflet-shim'
   }
 
   # Add shims

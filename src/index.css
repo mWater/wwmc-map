@@ -1,3 +1,17 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+}
+
+#map {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+}
+
 .map-info {
     padding: 6px 8px;
     font: 14px/16px Arial, Helvetica, sans-serif;
@@ -52,3 +66,8 @@
 .btn.orange.active.shadow:hover {
     box-shadow: 0 10px 0 0 rgb(0 0 0 / 25%);
 }
+
+/* Remove or comment out the body padding at the bottom of the file */
+/* body {
+  padding: 20px;
+} */
