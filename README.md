@@ -4,7 +4,7 @@ Uses browserify, gulp, bootstrap, backbone, lodash, jquery, handlebars for easy 
 
 ## Setup Instructions
 
-1. Install Node.js (recommend using Node v14 or v16 for legacy compatibility)
+1. Install Node.js (recommend using Node v10 for legacy compatibility)
 2. Install global dependencies:
    ```bash
    npm install -g gulp bower
