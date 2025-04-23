@@ -1,4 +1,3 @@
-
 PopupView = require './popup/PopupView'
 FlushingPopup = require './popup/FlushingPopup'
 
@@ -49,10 +48,9 @@ module.exports = class MapView
       @currentDisplayType = displayType
       @currentYearFilter = filters.yearFilter
     else
-      if @currentDisplayType == displayType and @currentWaterActionFilter == filters.water_action_type and @mapType == mapType
+      if @currentDisplayType == displayType and @mapType == mapType
         return
       @currentDisplayType = displayType
-      @currentWaterActionFilter = filters.water_action_type
 
     @mapType = mapType
 
@@ -65,8 +63,6 @@ module.exports = class MapView
     url = @ctx.tileUrl + "?type="+@mapType+"&display=" + displayType
     if filters.yearFilter != ""
       url += "&year=" + filters.yearFilter
-    if filters.water_action_type != ""
-      url += "&water_action_type=" + filters.water_action_type
 
     @dataLayer = L.tileLayer(url)
     @dataLayer.setOpacity(0.8)
@@ -82,8 +78,6 @@ module.exports = class MapView
     url = @ctx.gridUrl + "?type="+@mapType+"&display=" + displayType
     if filters.yearFilter != ""
       url += "&year=" + filters.yearFilter
-    if filters.water_action_type != ""
-      url += "&water_action_type=" + filters.water_action_type
     @gridLayer = new L.UtfGrid(url, { useJsonP: false })
     @map.addLayer(@gridLayer)
 
@@ -94,33 +88,30 @@ module.exports = class MapView
 
 
   handleMarkerClick: (id) ->
-    # To test species and photos
-    # id = 'b2017c0f-33f1-40d6-aecb-37f8d359a64c'
-    # To test nitrite, nitrate and phosphate
-    # id = '72add3df-31db-482d-a554-d44d30cc954d'
-    # Get site
+    console.log("Marker clicked:", id)
+    console.log("Map type:", @mapType)
+    
+    if @mapType == 'wwmc_water_actions'
+      $.getJSON @ctx.apiUrl + "responses/#{id}", (response) =>
+        console.log("Water action response data:", response)
+        # Create popup
+        popupView = new FlushingPopup(ctx: @ctx, response: response).render()
+        popup = L.popup({ minWidth: 500 }) # , offset: [0, -34]
+          .setLatLng(L.latLng(response.data['de5c721a4e0b445c8bf8cccd46cbfcc5'].value.latitude, response.data['de5c721a4e0b445c8bf8cccd46cbfcc5'].value.longitude))
+          .setContent(popupView.el)
 
-    filter = @filterDiv.find("#selector").val()
-    if @mapType == 'wwmc_water_actions' and filter == 'flushing'
-        $.getJSON @ctx.apiUrl + "responses/#{id}", (response) =>
-            # Create popup
-            popupView = new FlushingPopup(ctx: @ctx, response: response).render()
-            console.log(response)
-            popup = L.popup({ minWidth: 500 }) # , offset: [0, -34]
-                .setLatLng(L.latLng(response.data['de5c721a4e0b445c8bf8cccd46cbfcc5'].value.latitude, response.data['de5c721a4e0b445c8bf8cccd46cbfcc5'].value.longitude))
-                .setContent(popupView.el)
-
-            @map.openPopup(popup)
+        @map.openPopup(popup)
     else
-        $.getJSON @ctx.apiUrl + "entities/surface_water/#{id}", (site) =>
-            # Create popup
-            popupView = new PopupView(ctx: @ctx, site: site).render()
+      $.getJSON @ctx.apiUrl + "entities/surface_water/#{id}", (site) =>
+        console.log("Surface water site data:", site)
+        # Create popup
+        popupView = new PopupView(ctx: @ctx, site: site).render()
 
-            popup = L.popup({ minWidth: 500 }) # , offset: [0, -34]
-                .setLatLng(L.latLng(site.location.coordinates[1], site.location.coordinates[0]))
-                .setContent(popupView.el)
+        popup = L.popup({ minWidth: 500 }) # , offset: [0, -34]
+          .setLatLng(L.latLng(site.location.coordinates[1], site.location.coordinates[0]))
+          .setContent(popupView.el)
 
-            @map.openPopup(popup)
+        @map.openPopup(popup)
 
   # Add control for switching type
   addBaseLayerControl: ->
@@ -169,7 +160,6 @@ module.exports = class MapView
       @mapTypeSwitcherDiv.find('#type_wwmc_water_action').on('click', (e) =>
         # @mapType = 'wwmc_water_actions'
         @fetchMap('wwmc_water_actions')
-        # @fetchMap('wwmc_water_actions')
       )
 
       return @mapTypeSwitcherDiv.get(0)
@@ -222,8 +212,6 @@ module.exports = class MapView
 
     if mapType == 'wwmc_main'
       filters.yearFilter = filter
-    else if mapType == 'wwmc_water_actions'
-      filters.water_action_type = filter or 'plogging'
 
     if mapType != @mapType
       @addFilterControl(mapType)

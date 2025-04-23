@@ -43,12 +43,21 @@ makeWebpackConfig = -> {
       }
       {   
         test: /\.hbs$/
-        loader: "handlebars-loader" 
+        use: [
+          {
+            loader: 'handlebars-loader',
+            options: {
+              helperDirs: [
+                __dirname + "/src/helpers"
+              ]
+            }
+          }
+        ]
       }
     ]
   }
   resolve: {
-    extensions: [".coffee", ".js", ".json"]
+    extensions: [".coffee", ".js", ".json", ".hbs"]
   }
   externals: {
     'jquery': 'jQuery'
