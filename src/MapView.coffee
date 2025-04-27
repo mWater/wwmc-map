@@ -1,4 +1,3 @@
-
 PopupView = require './popup/PopupView'
 FlushingPopup = require './popup/FlushingPopup'
 
@@ -8,6 +7,7 @@ module.exports = class MapView
     @ctx = options.ctx
     @currentDisplayType = null
     @currentYearFilter = null
+    @currentActionType = null
 
     @currentWaterActionFilter = null
 
@@ -44,15 +44,11 @@ module.exports = class MapView
 
   createDataLayer: (mapType, displayType, filters) ->
     if mapType == "wwmc_main"
-      if @currentDisplayType == displayType and @currentYearFilter == filters.yearFilter and @mapType == mapType
-        return
       @currentDisplayType = displayType
       @currentYearFilter = filters.yearFilter
     else
-      if @currentDisplayType == displayType and @currentWaterActionFilter == filters.water_action_type and @mapType == mapType
-        return
       @currentDisplayType = displayType
-      @currentWaterActionFilter = filters.water_action_type
+      @currentActionType = filters.action_type
 
     @mapType = mapType
 
@@ -65,8 +61,14 @@ module.exports = class MapView
     url = @ctx.tileUrl + "?type="+@mapType+"&display=" + displayType
     if filters.yearFilter != ""
       url += "&year=" + filters.yearFilter
-    if filters.water_action_type != ""
-      url += "&water_action_type=" + filters.water_action_type
+    if mapType == 'wwmc_water_actions'
+      actionType = filters.action_type or 'all'
+      url += "&action_type=" + actionType
+      # For backward compatibility
+      if actionType == 'all'
+        url += "&water_action_type=plogging"
+      else if actionType == 'flushing'
+        url += "&water_action_type=flushing"
 
     @dataLayer = L.tileLayer(url)
     @dataLayer.setOpacity(0.8)
@@ -82,8 +84,14 @@ module.exports = class MapView
     url = @ctx.gridUrl + "?type="+@mapType+"&display=" + displayType
     if filters.yearFilter != ""
       url += "&year=" + filters.yearFilter
-    if filters.water_action_type != ""
-      url += "&water_action_type=" + filters.water_action_type
+    if mapType == 'wwmc_water_actions'
+      actionType = filters.action_type or 'all'
+      url += "&action_type=" + actionType
+      # For backward compatibility
+      if actionType == 'all'
+        url += "&water_action_type=plogging"
+      else if actionType == 'flushing'
+        url += "&water_action_type=flushing"
     @gridLayer = new L.UtfGrid(url, { useJsonP: false })
     @map.addLayer(@gridLayer)
 
@@ -190,24 +198,32 @@ module.exports = class MapView
 
   addFilterControl: (mapType) ->
     date = new Date()
-    years = [date.getFullYear()..2007]
+    years = [date.getFullYear()..2015]
 
     if @filter?
       @filter.removeFrom(@map)
 
     @filter = L.control({position: 'bottomright'})
 
-
     if mapType == "wwmc_main"
       filterDiv = $(require("./FilterControl.hbs")({years: years}))
     else
-      filterDiv = $(require("./WaterActionFilterControl.hbs")())
+      filterDiv = $(require("./WaterActionFilterControl.hbs")({years: years}))
 
     @filter.onAdd = (map) =>
       @filterDiv = filterDiv
 
+      # Set the year selector to the current year filter value if it exists
+      if @currentYearFilter
+        @filterDiv.find("#year_selector").val(@currentYearFilter)
+
       @filterDiv.find("#selector").on 'change', (e) =>
         e.stopPropagation()
+        @fetchMap(mapType)
+
+      @filterDiv.find("#year_selector").on 'change', (e) =>
+        e.stopPropagation()
+        @currentYearFilter = @filterDiv.find("#year_selector").val()
         @fetchMap(mapType)
 
       return @filterDiv.get(0)
@@ -218,12 +234,16 @@ module.exports = class MapView
   fetchMap: (mapType) ->
     displayType = @legendDiv.find("#selector").val()
     filters = {}
-    filter = @filterDiv.find("#selector").val()
-
+    
+    # Get the year filter value from the current selector
+    yearFilter = @filterDiv.find("#year_selector").val()
+    @currentYearFilter = yearFilter if yearFilter
+    
     if mapType == 'wwmc_main'
-      filters.yearFilter = filter
+      filters.yearFilter = yearFilter
     else if mapType == 'wwmc_water_actions'
-      filters.water_action_type = filter or 'plogging'
+      filters.action_type = @filterDiv.find("#selector").val() or 'all'
+      filters.yearFilter = yearFilter
 
     if mapType != @mapType
       @addFilterControl(mapType)
