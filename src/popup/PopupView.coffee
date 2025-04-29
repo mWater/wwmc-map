@@ -59,55 +59,125 @@ module.exports = class PopupView extends Backbone.View
     ploggingResponseFilter = "{\"form\":\"#{ploggingFormId}\",\"data.#{ploggingEntityQuestionId}.value.code\":\"#{@site.code}\"}"
     ploggingFullPath = @ctx.apiUrl + "responses?filter=#{ploggingResponseFilter}"
 
+    # Flushing form
+    flushingFormId = '2e5325c13c80416db098e77a14eef2c3'
+    flushingEntityQuestionId = '2a381d9fe63146bdbdf3df2d9c0b98e2'
+    flushingResponseFilter = "{\"form\":\"#{flushingFormId}\",\"data.#{flushingEntityQuestionId}.value.code\":\"#{@site.code}\"}"
+    flushingFullPath = @ctx.apiUrl + "responses?filter=#{flushingResponseFilter}"
+
     $.getJSON fullPath, (responses) =>
       $.getJSON ploggingFullPath, (ploggingResponses) =>
-        # Sort responses
-        responses = _.sortBy(responses, (r) -> r.submittedOn)
-        visitsData = createVisitsData(responses)
+        $.getJSON flushingFullPath, (flushingResponses) =>
+          # Sort responses
+          responses = _.sortBy(responses, (r) -> r.submittedOn)
+          ploggingResponses = _.sortBy(ploggingResponses, (r) -> r.submittedOn)
+          flushingResponses = _.sortBy(flushingResponses, (r) -> r.submittedOn)
 
-        ploggingResponses = _.sortBy(ploggingResponses, (r) -> r.submittedOn)
-        ploggingData = createWaterActionData(ploggingResponses, ploggingFields)
+          # --- Aggregate all actions ---
+          actions = []
 
+          # Visit form (d1c360082dfc46b9bb1fd0ff582d6c06)
+          visitActionQ = '2597aa0b0ae940a6b71a7d3aa87a4776'
+          visitParticipantsMatrixQ = '45c68102984b4c93b23a4e63e89d1d67'
+          for response in responses
+            date = response.data['efb614336f504f31a312581e2283a8b2']?.value || response.submittedOn
+            # Robustly sum all values in the matrix question for total participants
+            participants = 0
+            for key, val of response.data
+              if val? and typeof val.value is 'object'
+                for rowKey, rowVal of val.value
+                  if rowVal?[visitParticipantsMatrixQ]?.value?
+                    v = rowVal[visitParticipantsMatrixQ].value
+                    if v? and not isNaN(parseInt(v))
+                      participants += parseInt(v)
+            actionsArr = response.data[visitActionQ]?.value || []
+            if typeof actionsArr is 'string' then actionsArr = [actionsArr]
+            for actionId in actionsArr
+              actions.push {
+                date: date
+                action_type: actionId
+                participants: participants
+                response: response
+                form: 'd1c360082dfc46b9bb1fd0ff582d6c06'
+              }
 
-        @waterActionTab.setVisitsData({
-        plogging: ploggingData,
-        })
+          # Plogging/Other Actions form (3203d0e5b2ec47418fc7a37466dff7ba)
+          ploggingActionQ = '646a5d4f22ba4b9f81e03061df5e655d'
+          for response in ploggingResponses
+            date = response.data['9e40eb8f50c8417bb0338c884f3916a1']?.value || response.submittedOn
+            participants = response.data['1f4481c41936423fb957cb705c464211']?.value
+            actionsArr = response.data[ploggingActionQ]?.value || []
+            if typeof actionsArr is 'string' then actionsArr = [actionsArr]
+            for actionId in actionsArr
+              actions.push {
+                date: date
+                action_type: actionId
+                participants: participants
+                response: response
+                form: '3203d0e5b2ec47418fc7a37466dff7ba'
+              }
 
-        photoData = []
-        @visitsData = visitsData
+          # Flushing form (2e5325c13c80416db098e77a14eef2c3)
+          for response in flushingResponses
+            date = response.data['9e40eb8f50c8417bb0338c884f3916a1']?.value || response.submittedOn
+            participants = response.data['1f4481c41936423fb957cb705c464211']?.value
+            actions.push {
+              date: date
+              action_type: 'flushing'
+              participants: participants
+              response: response
+              form: 'flushing'
+            }
 
-        for visitData in @visitsData
-            if visitData.photos? and visitData.photos.length > 0
-                photoIds = []
-                for photo in visitData.photos
-                    photoIds.push(photo.id)
-                    photoData.push({
-                        photoIds: photoIds,
-                        date: if visitData.date.length <= 10 then moment(visitData.date, moment.ISO_8601).format("ll") else moment(visitData.date, moment.ISO_8601).format("lll")
-                    })
+          # Sort actions by date descending
+          actions = _.sortBy(actions, (a) -> -moment(a.date).valueOf())
 
-        for fData in ploggingData
-            if fData.before_image? and fData.before_image.length > 0
-                photoIds = []
-                for photo in fData.before_image
-                    photoIds.push(photo.id)
-                    photoData.push({
-                        photoIds: photoIds,
-                        date: if fData.date.length <= 10 then moment(fData.date, moment.ISO_8601).format("ll") else moment(fData.date, moment.ISO_8601).format("lll")
-                    })
-            if fData.after_image? and fData.after_image.length > 0
-                photoIds = []
-                for photo in fData.after_image
-                    photoIds.push(photo.id)
-                    photoData.push({
-                        photoIds: photoIds,
-                        date: if fData.date.length <= 10 then moment(fData.date, moment.ISO_8601).format("ll") else moment(fData.date, moment.ISO_8601).format("lll")
-                    })
+          @waterActionTab.setActionsData(actions)
 
-        @dataTab.setVisitsData(visitsData)
-        @photosTab.setVisitsData(photoData)
-        @speciesTab.setVisitsData(visitsData)
-        @historyTab.setVisitsData(visitsData)
+          visitsData = createVisitsData(responses)
+
+          ploggingResponses = _.sortBy(ploggingResponses, (r) -> r.submittedOn)
+          ploggingData = createWaterActionData(ploggingResponses, ploggingFields)
+
+          @waterActionTab.setVisitsData({
+          plogging: ploggingData,
+          })
+
+          photoData = []
+          @visitsData = visitsData
+
+          for visitData in @visitsData
+              if visitData.photos? and visitData.photos.length > 0
+                  photoIds = []
+                  for photo in visitData.photos
+                      photoIds.push(photo.id)
+                      photoData.push({
+                          photoIds: photoIds,
+                          date: if visitData.date.length <= 10 then moment(visitData.date, moment.ISO_8601).format("ll") else moment(visitData.date, moment.ISO_8601).format("lll")
+                      })
+
+          for fData in ploggingData
+              if fData.before_image? and fData.before_image.length > 0
+                  photoIds = []
+                  for photo in fData.before_image
+                      photoIds.push(photo.id)
+                      photoData.push({
+                          photoIds: photoIds,
+                          date: if fData.date.length <= 10 then moment(fData.date, moment.ISO_8601).format("ll") else moment(fData.date, moment.ISO_8601).format("lll")
+                      })
+              if fData.after_image? and fData.after_image.length > 0
+                  photoIds = []
+                  for photo in fData.after_image
+                      photoIds.push(photo.id)
+                      photoData.push({
+                          photoIds: photoIds,
+                          date: if fData.date.length <= 10 then moment(fData.date, moment.ISO_8601).format("ll") else moment(fData.date, moment.ISO_8601).format("lll")
+                      })
+
+          @dataTab.setVisitsData(visitsData)
+          @photosTab.setVisitsData(photoData)
+          @speciesTab.setVisitsData(visitsData)
+          @historyTab.setVisitsData(visitsData)
 
     this
 

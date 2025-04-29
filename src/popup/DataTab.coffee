@@ -155,3 +155,11 @@ module.exports = class DataTab extends Tab
     }
 
     myLineChart = new Chart(ctx).Line(data, {pointDot: true, pointHitDetectionRadius: 2})
+
+  setLoading: ->
+    @$el.html("""
+      <div class='text-center' style='padding: 40px 0;'>
+        <i class='fa fa-spinner fa-spin' style='font-size:2em;'></i><br/>
+        <span class='text-muted'>Loading water quality data...</span>
+      </div>
+    """)

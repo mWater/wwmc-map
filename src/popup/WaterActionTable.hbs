@@ -1,0 +1,29 @@
+{{#if hasNoData}}
+    <div class="text-center text-muted" style="padding: 40px 0; font-size: 1.2em;">
+        <i class="fa fa-info-circle" style="font-size:1.5em;"></i><br/>
+        No water actions recorded for this site.
+    </div>
+{{else}}
+<div class="table-responsive" style="max-height:280px;overflow:auto;">
+<table id="waterActionTable" class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Water Action Taken</th>
+            <th>Participants</th>
+            <th>Environmental Impact</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{#each data}}
+        <tr class="action-row" data-index="{{@index}}">
+            <td>{{date}}</td>
+            <td>{{action_type}}</td>
+            <td>{{participants}}</td>
+            <td><a href="#" class="view-details" data-index="{{@index}}">Full report</a></td>
+        </tr>
+        {{/each}}
+    </tbody>
+</table>
+</div>
+{{/if}} 
