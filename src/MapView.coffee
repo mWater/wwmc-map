@@ -109,26 +109,16 @@ module.exports = class MapView
     # Get site
 
     filter = @filterDiv.find("#selector").val()
-    if @mapType == 'wwmc_water_actions' and filter == 'flushing'
-        $.getJSON @ctx.apiUrl + "responses/#{id}", (response) =>
-            # Create popup
-            popupView = new FlushingPopup(ctx: @ctx, response: response).render()
-            console.log(response)
-            popup = L.popup({ minWidth: 500 }) # , offset: [0, -34]
-                .setLatLng(L.latLng(response.data['de5c721a4e0b445c8bf8cccd46cbfcc5'].value.latitude, response.data['de5c721a4e0b445c8bf8cccd46cbfcc5'].value.longitude))
-                .setContent(popupView.el)
 
-            @map.openPopup(popup)
-    else
-        $.getJSON @ctx.apiUrl + "entities/surface_water/#{id}", (site) =>
-            # Create popup
-            popupView = new PopupView(ctx: @ctx, site: site).render()
+    $.getJSON @ctx.apiUrl + "entities/surface_water/#{id}", (site) =>
+        # Create popup
+        popupView = new PopupView(ctx: @ctx, site: site).render()
 
-            popup = L.popup({ minWidth: 500 }) # , offset: [0, -34]
-                .setLatLng(L.latLng(site.location.coordinates[1], site.location.coordinates[0]))
-                .setContent(popupView.el)
+        popup = L.popup({ minWidth: 500 }) # , offset: [0, -34]
+            .setLatLng(L.latLng(site.location.coordinates[1], site.location.coordinates[0]))
+            .setContent(popupView.el)
 
-            @map.openPopup(popup)
+        @map.openPopup(popup)
 
   # Add control for switching type
   addBaseLayerControl: ->
