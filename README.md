@@ -4,7 +4,7 @@ A web-based mapping application for visualizing water monitoring and action data
 
 ## Prerequisites
 
-- Node.js (v10 or later recommended)
+- Node.js (v10 recommended)
 - npm (comes with Node.js)
 - Git
 
@@ -31,15 +31,14 @@ A web-based mapping application for visualizing water monitoring and action data
 
 To start the development server with live reload:
 ```bash
-gulp
+gulp watch
 ```
 
 This will:
-- Compile CoffeeScript files
-- Process Handlebars templates
-- Watch for file changes
-- Start a local development server
-- Open the application in your default browser
+- Run an initial build.
+- Start a Webpack Dev Server on `http://localhost:3001`.
+- Watch for file changes and trigger rebuilds.
+- The server provides live reloading.
 
 ## Building for Production
 
@@ -56,14 +55,6 @@ The production files will be generated in the `dist` directory.
 - Water action tracking and display
 - Data filtering and analysis
 - Responsive design for various screen sizes
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
 
 ## License
 
