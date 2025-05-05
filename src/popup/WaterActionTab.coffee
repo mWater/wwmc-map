@@ -1,6 +1,7 @@
 Tab = require('./Tab')
 unitToString = require('./../unit').unitToString
 moment = require 'moment'
+ids = require './question_ids'
 
 durations = [
   {"id":"eJzaU1w","label":{"en":"5 minutes","_base":"en"}},
@@ -190,43 +191,47 @@ module.exports = class WaterActionTab extends Tab
       
       # Beach/river cleanup
       if action.action_type == 'TKdfEkd'
-        # --- Event Duration (action form only) ---
-        durationVal = data['b8041344dc9f4ad39fde730feee52808']?.value
+        # --- Event Duration (both forms) ---
+        durationId = if isVisit then ids.forms.waterVisit.actions.beachCleanup.duration.id else ids.forms.waterAction.actions.beachCleanup.duration.id
+        durationVal = data[durationId]?.value
         durationLabel = ''
         if durationVal?
           durationMap = {
             'KkyCEUK': '5 minutes',
             '7kbp1Qf': '15 minutes',
             'NacqJvl': '30 minutes',
-            'RA1sWJE': '1+ hour'
+            'RA1sWJE': '1 hour+'
           }
           durationLabel = durationMap[durationVal] or durationVal
           html += "<p class='card-text mb-2'><strong>Event Duration:</strong> #{durationLabel}</p>"
 
-        # --- Distance of clean-up (unit question, action form only) ---
-        distanceObj = data['ded3045bbb394616b5c9138a254e25ff']
+        # --- Distance of clean-up (both forms) ---
+        distanceId = if isVisit then ids.forms.waterVisit.actions.beachCleanup.distance.id else ids.forms.waterAction.actions.beachCleanup.distance.id
+        distanceObj = data[distanceId]
         distance = if distanceObj?.value? then distanceObj.value.quantity else distanceObj?.quantity
         distanceUnits = if distanceObj?.value? then distanceObj.value.units else distanceObj?.units
         distanceLabel = if distanceUnits == 'c7nLyvE' then 'miles' else if distanceUnits == 'mFk9XEy' then 'kilometers' else ''
         if distance?
           html += "<p class='card-text mb-2'><strong>Distance of Clean-up:</strong> #{distance} #{distanceLabel}</p>"
 
-        # --- Total estimated weight (matrix for action form, direct for visit form) ---
+        # --- Total estimated weight (matrix for both forms) ---
         weight = null
         weightUnits = null
         unitLabel = ''
         if isPlogging
           # Action form: matrix structure
-          matrix = data['ac2fd2bbd74e47ccb0dd305d45c90927']?.value
-          beachRow = if matrix? then matrix['UCxBANG'] else undefined
-          beachWeightObj = if beachRow? then beachRow['f326ecae8ca949789d553b4673425431'] else undefined
+          matrix = data[ids.forms.waterAction.actions.beachCleanup.totalWeight.matrixParent]?.value
+          beachRow = if matrix? then matrix[ids.forms.waterAction.actions.beachCleanup.totalWeight.matrixKey] else undefined
+          beachWeightObj = if beachRow? then beachRow[ids.forms.waterAction.actions.beachCleanup.totalWeight.id] else undefined
           weight = if beachWeightObj?.value? then beachWeightObj.value.quantity else beachWeightObj?.quantity
           weightUnits = if beachWeightObj?.value? then beachWeightObj.value.units else beachWeightObj?.units
         else if isVisit
-          # Visit form: direct
-          weightObj = data['f326ecae8ca949789d553b4673425431']
-          weight = if weightObj?.value? then weightObj.value.quantity else weightObj?.quantity
-          weightUnits = if weightObj?.value? then weightObj.value.units else weightObj?.units
+          # Visit form: matrix structure
+          matrix = data[ids.forms.waterVisit.actions.beachCleanup.totalWeight.matrixParent]?.value
+          beachRow = if matrix? then matrix[ids.forms.waterVisit.actions.beachCleanup.totalWeight.matrixKey] else undefined
+          beachWeightObj = if beachRow? then beachRow[ids.forms.waterVisit.actions.beachCleanup.totalWeight.id] else undefined
+          weight = if beachWeightObj?.value? then beachWeightObj.value.quantity else beachWeightObj?.quantity
+          weightUnits = if beachWeightObj?.value? then beachWeightObj.value.units else beachWeightObj?.units
         if weightUnits
           opt = beachOptions.find((o) -> o.id == weightUnits)
           unitLabel = opt?.label?.en or ''
@@ -235,64 +240,86 @@ module.exports = class WaterActionTab extends Tab
       
       # Storm Drain Activity
       if action.action_type == 'ASR2hr3'
-        markedDrains = data['f9560b5ee5db4586b365820f8d8d22ee']?.value
-        numDrains = data['51b5bf0208a344b48b108ae4b7349e5d']?.value
-        debrisObj = data['8dbc1755488e4f919423984da96cb895']
+        # --- Storm Drains Marked (both forms) ---
+        if isPlogging
+          markedDrains = data[ids.forms.waterAction.actions.stormDrain.marked]?.value
+          numDrains = data[ids.forms.waterAction.actions.stormDrain.howMany]?.value
+          if markedDrains == ids.forms.waterAction.actions.stormDrain.markedYes
+            html += "<p class='card-text mb-2'><strong>Storm Drains Marked:</strong> Yes</p>"
+            if numDrains?
+              html += "<p class='card-text mb-2'><strong>Number of Drains Marked:</strong> #{numDrains}</p>"
+        else if isVisit
+          # For visit form, we only have the number of drains
+          numDrains = data[ids.forms.waterVisit.actions.stormDrain.howMany]?.value
+          if numDrains?
+            html += "<p class='card-text mb-2'><strong>Number of Drains Marked:</strong> #{numDrains}</p>"
+
+        # --- Storm Drain Debris Collected (both forms) ---
+        debrisId = if isVisit then ids.forms.waterVisit.actions.stormDrain.debrisWeight.id else ids.forms.waterAction.actions.stormDrain.debrisWeight.id
+        debrisObj = data[debrisId]
         debrisQuantity = if debrisObj?.value? then debrisObj.value.quantity else debrisObj?.quantity
         debrisUnits = if debrisObj?.value? then debrisObj.value.units else debrisObj?.units
         debrisLabel = ''
         if debrisUnits
           opt = stormDrainOptions.find((o) -> o.id == debrisUnits)
           debrisLabel = opt?.label?.en or ''
-        if markedDrains == 'jm5akUr'
-          html += "<p class='card-text mb-2'><strong>Storm Drains Marked:</strong> Yes</p>"
-          if numDrains?
-            html += "<p class='card-text mb-2'><strong>Number of Drains Marked:</strong> #{numDrains}</p>"
         if debrisQuantity?
           html += "<p class='card-text mb-2'><strong>Storm Drain Debris Collected:</strong> #{debrisQuantity} #{debrisLabel}</p>"
         
       # Tree planting
       if action.action_type == 'NzRwvgQ'
-        trees = if isVisit then data['626fd436c5ea48fb9ada22094eea9005']?.value else data['cb972ebaf6ac45718eea988160f2c6f8']?.value
-        treeTypes = data['2269cd7772e34286b43d36ab84b5ecf4']?.value
-        nativeSpecies = if isVisit then data['9c1e366f1c234381884bfe5df94a4264']?.value else data['420079c0c9834ae0b4abd2d21a7ab452']?.value
-        speciesPlanted = data['65eed5ce68be42a9ba9d23e4ae1f724b']?.value
-        if trees?
-          html += "<p class='card-text mb-2'><strong>Trees Planted:</strong> #{trees}</p>"
+        # --- Types of Trees (both forms) ---
+        treeTypes = data[ids.forms.waterAction.actions.treePlanting.types]?.value
         if treeTypes?
           html += "<p class='card-text mb-2'><strong>Types of Trees:</strong> #{treeTypes}</p>"
+
+        # --- Number of Trees (both forms) ---
+        treesId = if isVisit then ids.forms.waterVisit.actions.treePlanting.howMany else ids.forms.waterAction.actions.treePlanting.howMany
+        trees = data[treesId]?.value
+        if trees?
+          html += "<p class='card-text mb-2'><strong>Trees Planted:</strong> #{trees}</p>"
+
+        # --- Native Species (both forms) ---
+        nativeId = if isVisit then ids.forms.waterVisit.actions.treePlanting.native else ids.forms.waterAction.actions.treePlanting.native
+        nativeSpecies = data[nativeId]?.value
         if nativeSpecies?
-          html += "<p class='card-text mb-2'><strong>Native Species Planted:</strong> #{if nativeSpecies == 'KYDFjR8' then 'Yes' else 'No'}</p>"
+          html += "<p class='card-text mb-2'><strong>Native Species Planted:</strong> #{if nativeSpecies == ids.forms.waterAction.actions.treePlanting.nativeYes then 'Yes' else 'No'}</p>"
+
+        # --- Species Planted (both forms) ---
+        speciesPlanted = data[ids.forms.waterAction.actions.treePlanting.species]?.value
         if speciesPlanted?
           html += "<p class='card-text mb-0'><strong>Species Planted:</strong> #{speciesPlanted}</p>"
       
       # Habitat Restoration
       if action.action_type == 'f1PswKP'
-        areaRestoredObj = data['098c2f20637d4468ad5403439ce84983']
+        # --- Area Restored (both forms) ---
+        areaRestoredId = if isVisit then ids.forms.waterVisit.actions.habitatRestoration.areaRestored else ids.forms.waterAction.actions.habitatRestoration.areaRestored
+        areaRestoredObj = data[areaRestoredId]
         areaRestored = if areaRestoredObj?.value? then areaRestoredObj.value.quantity else areaRestoredObj?.quantity
         if areaRestored?
           html += "<p class='card-text mb-2'><strong>Area of Habitat Restored:</strong> #{areaRestored} m²</p>"
-        invasivesRemoved = data['91b2ec06b678413d89ff6a2afcece01f']?.value
-        if invasivesRemoved == 'jzfqdme'
+
+        # --- Invasive Species Removal (both forms) ---
+        invasivesRemovedId = if isVisit then ids.forms.waterVisit.actions.habitatRestoration.removedInvasive else ids.forms.waterAction.actions.habitatRestoration.removedInvasive
+        invasivesRemoved = data[invasivesRemovedId]?.value
+        if invasivesRemoved == ids.forms.waterAction.actions.habitatRestoration.removedInvasiveYes
           html += "<p class='card-text mb-2'><strong>Invasive Species Removed:</strong> Yes</p>"
-          invasiveSpecies = data['1c8cf5b3d5ce40538eff1dbde4e271eb']?.value
-          invasiveSpeciesList = data['ecbc3a42f3ca4ef888c0cc30fa9f05af']?.value
+          invasiveSpeciesId = if isVisit then ids.forms.waterVisit.actions.habitatRestoration.invasiveSpecies else ids.forms.waterAction.actions.habitatRestoration.invasiveSpecies
+          invasiveSpecies = data[invasiveSpeciesId]?.value
           if invasiveSpecies?
             if Array.isArray(invasiveSpecies)
               html += "<p class='card-text mb-2'><strong>Types of Invasive Species Removed:</strong> #{invasiveSpecies.join(', ')}</p>"
             else
               html += "<p class='card-text mb-2'><strong>Types of Invasive Species Removed:</strong> #{invasiveSpecies}</p>"
-          if invasiveSpeciesList?
-            if Array.isArray(invasiveSpeciesList)
-              html += "<p class='card-text mb-2'><strong>Invasive Species Removed (List):</strong> #{invasiveSpeciesList.join(', ')}</p>"
-            else
-              html += "<p class='card-text mb-2'><strong>Invasive Species Removed (List):</strong> #{invasiveSpeciesList}</p>"
-          areaRestoredInvasivesObj = data['01a17e04ec574517b7d9d71c8dfe0c2a']
+          areaRestoredInvasivesId = if isVisit then ids.forms.waterVisit.actions.habitatRestoration.areaRestoredAlt else ids.forms.waterAction.actions.habitatRestoration.areaRestoredAlt
+          areaRestoredInvasivesObj = data[areaRestoredInvasivesId]
           areaRestoredInvasives = if areaRestoredInvasivesObj?.value? then areaRestoredInvasivesObj.value.quantity else areaRestoredInvasivesObj?.quantity
           if areaRestoredInvasives?
             html += "<p class='card-text mb-0'><strong>Area Restored from Invasives:</strong> #{areaRestoredInvasives} m²</p>"
-        # Always show 'What species did you plant?'
-        speciesPlanted = data['65eed5ce68be42a9ba9d23e4ae1f724b']?.value
+
+        # --- Species Planted (both forms) ---
+        speciesPlantedId = if isVisit then ids.forms.waterVisit.actions.habitatRestoration.speciesPlanted else ids.forms.waterAction.actions.habitatRestoration.speciesPlanted
+        speciesPlanted = data[speciesPlantedId]?.value
         if speciesPlanted?
           html += "<p class='card-text mb-0'><strong>Species Planted:</strong> #{speciesPlanted}</p>"
       
