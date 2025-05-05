@@ -4,7 +4,7 @@ A web-based mapping application for visualizing water monitoring and action data
 
 ## Prerequisites
 
-- Node.js (v16 or later recommended)
+- Node.js (v10 or later recommended)
 - npm (comes with Node.js)
 - Git
 
