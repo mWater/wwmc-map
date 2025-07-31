@@ -17,7 +17,7 @@ module.exports = class MapView
     @mapType = 'wwmc_main'
 
     # Add base layer
-    @baseLayer = L.bingLayer("Ao26dWY2IC8PjorsJKFaoR85EPXCnCohrJdisCWXIULAXFo0JAXquGauppTMQbyU", { type: "Road"})
+    @baseLayer = L.tileLayer("https://api.maptiler.com/maps/openstreetmap/256/{z}/{x}/{y}.jpg?key=QCTs345zI3Dm8x1hv3m3")
     @map.addLayer(@baseLayer)
 
     @searchControl = new L.esri.Controls.Geosearch({position: 'topright'}).addTo(@map)
