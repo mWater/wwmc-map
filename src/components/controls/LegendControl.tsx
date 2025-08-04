@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { DisplayType } from '../../types';
 
 interface LegendControlProps {
@@ -14,9 +14,29 @@ const LegendControl: React.FC<LegendControlProps> = ({
   apiUrl, 
   mapType 
 }) => {
+  const legendContentRef = useRef<HTMLDivElement>(null);
+
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     onDisplayTypeChange(e.target.value as DisplayType);
   };
+
+  useEffect(() => {
+    if (mapType !== 'wwmc_water_actions' && legendContentRef.current) {
+      const query = `type=${mapType}&display=${displayType}`;
+      const fullPath = `${apiUrl}maps/legend?${query}`;
+      
+      fetch(fullPath)
+        .then(response => response.text())
+        .then(html => {
+          if (legendContentRef.current) {
+            legendContentRef.current.innerHTML = html;
+          }
+        })
+        .catch(error => {
+          console.error('Error loading legend:', error);
+        });
+    }
+  }, [displayType, mapType, apiUrl]);
 
   return (
     <div className="card map-legend">
@@ -36,7 +56,7 @@ const LegendControl: React.FC<LegendControlProps> = ({
         </h3>
       </div>
       <div className="card-body">
-        <div id="legend_contents">
+        <div id="legend_contents" ref={legendContentRef}>
           {/* Legend content will be loaded dynamically */}
         </div>
       </div>

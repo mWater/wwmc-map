@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { createRoot, Root } from 'react-dom/client';
+import { createRoot } from 'react-dom/client';
 import * as L from 'leaflet';
 import * as esri from 'esri-leaflet';
 import * as geocoder from 'esri-leaflet-geocoder';
@@ -20,10 +20,6 @@ const MapView: React.FC<MapViewProps> = ({ ctx }) => {
   const mapInstanceRef = useRef<L.Map | null>(null);
   const dataLayerRef = useRef<L.TileLayer | null>(null);
   const gridLayerRef = useRef<any>(null);
-  const legendControlRef = useRef<L.Control | null>(null);
-  const filterControlRef = useRef<L.Control | null>(null);
-  const filterRootRef = useRef<Root | null>(null);
-  const mapTypeSwitcherRef = useRef<L.Control | null>(null);
 
   const [mapType, setMapType] = useState<MapType>('wwmc_main');
   const [currentDisplayType, setCurrentDisplayType] = useState<DisplayType>('ph');
@@ -50,9 +46,6 @@ const MapView: React.FC<MapViewProps> = ({ ctx }) => {
     L.control.zoom({ position: "bottomleft" }).addTo(map);
 
     // Initial setup
-    addLegendControl(map);
-    addFilterControl(map, mapType);
-    addMapTypeSwitcher(map);
     fetchMap(map, mapType, currentDisplayType, { yearFilter: currentYearFilter });
 
     return () => {
@@ -144,110 +137,11 @@ const MapView: React.FC<MapViewProps> = ({ ctx }) => {
     }
   };
 
-  const addLegendControl = (map: L.Map) => {
-    if (legendControlRef.current) {
-      legendControlRef.current.removeFrom(map);
-    }
 
-    const legend = new L.Control({ position: 'bottomright' });
-    legend.onAdd = () => {
-      const div = document.createElement('div');
-      const root = createRoot(div);
-      
-      const changeLegendControl = (displayType: DisplayType) => {
-        if (mapType !== 'wwmc_water_actions') {
-          const query = `type=${mapType}&display=${displayType}`;
-          const fullPath = `${ctx.apiUrl}maps/legend?${query}`;
-          // Load legend content dynamically
-          fetch(fullPath)
-            .then(response => response.text())
-            .then(html => {
-              const legendContent = div.querySelector('#legend_contents');
-              if (legendContent) {
-                legendContent.innerHTML = html;
-              }
-            });
-        }
-      };
 
-      root.render(
-        <LegendControl
-          displayType={currentDisplayType}
-          onDisplayTypeChange={handleDisplayTypeChange}
-          apiUrl={ctx.apiUrl}
-          mapType={mapType}
-        />
-      );
-      
-      // Load initial legend
-      setTimeout(() => changeLegendControl(currentDisplayType), 100);
-      
-      return div;
-    };
 
-    legendControlRef.current = legend;
-    legend.addTo(map);
-  };
 
-  const addFilterControl = (map: L.Map, mapType: MapType) => {
-    if (filterControlRef.current) {
-      filterControlRef.current.removeFrom(map);
-    }
 
-    const filter = new L.Control({ position: 'bottomright' });
-    filter.onAdd = () => {
-      const div = document.createElement('div');
-      const root = createRoot(div);
-      filterRootRef.current = root;
-      
-      if (mapType === 'wwmc_main') {
-        root.render(
-          <FilterControl
-            yearFilter={currentYearFilter}
-            onYearFilterChange={handleYearFilterChange}
-          />
-        );
-      } else {
-        root.render(
-          <WaterActionFilterControl
-            yearFilter={currentYearFilter}
-            actionType={currentActionType}
-            onYearFilterChange={handleYearFilterChange}
-            onActionTypeChange={(actionType) => setCurrentActionType(actionType)}
-          />
-        );
-      }
-      
-      return div;
-    };
-
-    filterControlRef.current = filter;
-    filter.addTo(map);
-  };
-
-  const addMapTypeSwitcher = (map: L.Map) => {
-    if (mapTypeSwitcherRef.current) {
-      mapTypeSwitcherRef.current.removeFrom(map);
-    }
-
-    const switcher = new L.Control({ position: 'topleft' });
-    switcher.onAdd = () => {
-      const div = document.createElement('div');
-      const root = createRoot(div);
-      
-      root.render(
-        <Switcher
-          mapType={mapType}
-          onMapTypeChange={handleMapTypeChange}
-        />
-      );
-      
-      return div;
-    };
-
-    mapTypeSwitcherRef.current = switcher;
-    switcher.addTo(map);
-  };
 
   const fetchMap = (map: L.Map, mapType: MapType, displayType?: DisplayType, filters?: Filters) => {
     const actualDisplayType = displayType || currentDisplayType;
@@ -264,8 +158,6 @@ const MapView: React.FC<MapViewProps> = ({ ctx }) => {
     setCurrentDisplayType(newDisplayType);
     if (mapInstanceRef.current) {
       fetchMap(mapInstanceRef.current, mapType, newDisplayType);
-      // Update legend control
-      addLegendControl(mapInstanceRef.current);
     }
   };
 
@@ -283,11 +175,6 @@ const MapView: React.FC<MapViewProps> = ({ ctx }) => {
   const handleMapTypeChange = (newMapType: MapType) => {
     setMapType(newMapType);
     if (mapInstanceRef.current) {
-      // Update controls for new map type
-      addFilterControl(mapInstanceRef.current, newMapType);
-      addLegendControl(mapInstanceRef.current);
-      addMapTypeSwitcher(mapInstanceRef.current);
-      
       const filters: Filters = { yearFilter: currentYearFilter };
       if (newMapType === 'wwmc_water_actions') {
         filters.action_type = currentActionType;
@@ -296,31 +183,58 @@ const MapView: React.FC<MapViewProps> = ({ ctx }) => {
     }
   };
 
-  // Update filter control UI when relevant state changes
-  useEffect(() => {
-    if (!filterRootRef.current) return;
 
-    if (mapType === 'wwmc_main') {
-      filterRootRef.current.render(
-        <FilterControl
-          yearFilter={currentYearFilter}
-          onYearFilterChange={handleYearFilterChange}
-        />
-      );
-    } else {
-      filterRootRef.current.render(
-        <WaterActionFilterControl
-          yearFilter={currentYearFilter}
-          actionType={currentActionType}
-          onYearFilterChange={handleYearFilterChange}
-          onActionTypeChange={(actionType) => setCurrentActionType(actionType)}
-        />
-      );
-    }
-  }, [currentYearFilter, currentActionType, mapType]);
 
   return (
-    <div ref={mapRef} style={{ height: '100vh', width: '100vw' }} />
+    <div style={{ position: 'relative', height: '100vh', width: '100vw' }}>
+      {/* The map takes full space */}
+      <div ref={mapRef} style={{ height: '100%', width: '100%' }} />
+      
+      {/* Controls as absolutely positioned React components */}
+      <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 1000 }}>
+        <Switcher
+          mapType={mapType}
+          onMapTypeChange={handleMapTypeChange}
+        />
+      </div>
+      
+      <div style={{ 
+        position: 'absolute', 
+        bottom: 10, 
+        right: 10, 
+        zIndex: 1000,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px'
+      }}>
+        {/* Filter control on top */}
+        <div>
+          {mapType === 'wwmc_main' ? (
+            <FilterControl
+              yearFilter={currentYearFilter}
+              onYearFilterChange={handleYearFilterChange}
+            />
+          ) : (
+            <WaterActionFilterControl
+              yearFilter={currentYearFilter}
+              actionType={currentActionType}
+              onYearFilterChange={handleYearFilterChange}
+              onActionTypeChange={setCurrentActionType}
+            />
+          )}
+        </div>
+        
+        {/* Legend control on bottom */}
+        <div>
+          <LegendControl
+            displayType={currentDisplayType}
+            onDisplayTypeChange={handleDisplayTypeChange}
+            apiUrl={ctx.apiUrl}
+            mapType={mapType}
+          />
+        </div>
+      </div>
+    </div>
   );
 };
 
