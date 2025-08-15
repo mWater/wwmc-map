@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import * as L from 'leaflet';
-import * as esri from 'esri-leaflet';
 import * as geocoder from 'esri-leaflet-geocoder';
 import { UtfGrid } from '../leaflet-utfgrid';
 import { Context, Site, Filters, MapType, DisplayType } from '../types';
@@ -200,7 +199,7 @@ const MapView: React.FC<MapViewProps> = ({ ctx }) => {
       
       <div style={{ 
         position: 'absolute', 
-        bottom: 10, 
+        bottom: 20, 
         right: 10, 
         zIndex: 1000,
         display: 'flex',
@@ -225,6 +224,7 @@ const MapView: React.FC<MapViewProps> = ({ ctx }) => {
         </div>
         
         {/* Legend control on bottom */}
+        {mapType === 'wwmc_main' && (
         <div>
           <LegendControl
             displayType={currentDisplayType}
@@ -233,6 +233,7 @@ const MapView: React.FC<MapViewProps> = ({ ctx }) => {
             mapType={mapType}
           />
         </div>
+        )}
       </div>
     </div>
   );

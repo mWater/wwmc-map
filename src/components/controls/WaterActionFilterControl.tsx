@@ -25,11 +25,11 @@ const WaterActionFilterControl: React.FC<WaterActionFilterControlProps> = ({
   };
 
   return (
-    <div className="card map-legend">
+    <div className="card map-legend" style={{ opacity: 0.8 }}>
       <div className="card-header">
-        <h3 className="card-title">
+        <h6 className="card-title" style={{ marginBottom: '0px' }}>
           Water Actions Filter
-        </h3>
+        </h6>
       </div>
       <div className="card-body">
         <div className="mb-3">

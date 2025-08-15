@@ -39,9 +39,9 @@ const LegendControl: React.FC<LegendControlProps> = ({
   }, [displayType, mapType, apiUrl]);
 
   return (
-    <div className="card map-legend">
+    <div className="card" style={{ opacity: 0.8 }}>
       <div className="card-header">
-        <h3 className="card-title">
+        <h6 className="card-title">
           <select 
             id="selector" 
             className="form-select" 
@@ -53,7 +53,7 @@ const LegendControl: React.FC<LegendControlProps> = ({
             <option value="turbidity">Turbidity</option>
             <option value="dissolved_oxygen">Oxygen</option>
           </select>
-        </h3>
+        </h6>
       </div>
       <div className="card-body">
         <div id="legend_contents" ref={legendContentRef}>

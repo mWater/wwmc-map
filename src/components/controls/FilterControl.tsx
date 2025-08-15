@@ -14,7 +14,7 @@ const FilterControl: React.FC<FilterControlProps> = ({ yearFilter, onYearFilterC
   };
 
   return (
-    <div className="card map-legend">
+    <div className="card" style={{ opacity: 0.8 }}>
       <div className="card-header">
         <h6 className="card-title mb-0">
           Filter by year
