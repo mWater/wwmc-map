@@ -37,9 +37,89 @@ const MapView: React.FC<MapViewProps> = ({ ctx }) => {
     const baseLayer = L.tileLayer("https://api.maptiler.com/maps/openstreetmap/256/{z}/{x}/{y}.jpg?key=QCTs345zI3Dm8x1hv3m3");
     map.addLayer(baseLayer);
 
-    // Add search control
-    const searchControl = new geocoder.Geosearch({ position: 'topright' });
+    // Add search control using legacy ArcGIS REST suggest/findAddressCandidates (no token)
+    const arcgisWorldUrl = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer';
+
+    const customProvider: any = {
+      options: {
+        label: 'Places and Addresses',
+        maxResults: 5
+      },
+      // no-op event parent methods expected by the control
+      addEventParent: () => {},
+      removeEventParent: () => {},
+      suggestions: (text: string, _bounds: any, callback: Function) => {
+        const url = `${arcgisWorldUrl}/suggest?f=json&text=${encodeURIComponent(text)}&maxSuggestions=${customProvider.options.maxResults}`;
+        const controller = new AbortController();
+        fetch(url, { signal: controller.signal })
+          .then((r) => r.json())
+          .then((json) => {
+            const suggestions = (json.suggestions || [])
+              .filter((s: any) => !s.isCollection)
+              .slice(0, customProvider.options.maxResults)
+              .map((s: any) => ({
+                text: s.text,
+                unformattedText: s.text,
+                magicKey: s.magicKey
+              }));
+            callback(null, suggestions);
+          })
+          .catch((err) => callback(err, []));
+
+        // Return an abortable object to satisfy control expectations
+        return { abort: () => controller.abort() };
+      },
+      results: (text: string, magicKey: string | undefined, _bounds: any, callback: Function) => {
+        const params = new URLSearchParams({
+          f: 'json',
+          singleLine: text,
+          outSr: '4326',
+          outFields: '*',
+          maxLocations: String(customProvider.options.maxResults)
+        });
+        if (magicKey) params.set('magicKey', magicKey as string);
+        const url = `${arcgisWorldUrl}/findAddressCandidates?${params.toString()}`;
+
+        fetch(url)
+          .then((r) => r.json())
+          .then((json) => {
+            const results = (json.candidates || []).map((c: any) => {
+              const latlng = L.latLng(c.location.y, c.location.x);
+              let bounds: L.LatLngBounds | undefined;
+              if (c.extent) {
+                const { xmin, ymin, xmax, ymax } = c.extent;
+                bounds = L.latLngBounds([ymin, xmin], [ymax, xmax]);
+              }
+              return {
+                text: c.address,
+                bounds,
+                score: c.score,
+                latlng,
+                properties: c.attributes
+              };
+            });
+            callback(null, results);
+          })
+          .catch((err) => callback(err, []));
+      }
+    };
+
+    const searchControl = new geocoder.Geosearch({ position: 'topright', providers: [customProvider] });
     searchControl.addTo(map);
+
+    // Render geosearch results and zoom to them
+    const searchResultsLayer = L.layerGroup().addTo(map);
+    (searchControl as any).on('results', (data: any) => {
+      searchResultsLayer.clearLayers();
+      if (data && data.results && data.results.length) {
+        for (let i = 0; i < data.results.length; i++) {
+          searchResultsLayer.addLayer(L.marker(data.results[i].latlng));
+        }
+        const latlngs = data.results.map((r: any) => r.latlng);
+        const bounds = L.latLngBounds(latlngs);
+        map.fitBounds(bounds, { maxZoom: 12 });
+      }
+    });
 
     // Add zoom control
     L.control.zoom({ position: "bottomleft" }).addTo(map);
