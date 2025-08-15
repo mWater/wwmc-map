@@ -136,12 +136,6 @@ const MapView: React.FC<MapViewProps> = ({ ctx }) => {
     }
   };
 
-
-
-
-
-
-
   const fetchMap = (map: L.Map, mapType: MapType, displayType?: DisplayType, filters?: Filters) => {
     const actualDisplayType = displayType || currentDisplayType;
     const actualFilters = filters || { yearFilter: currentYearFilter };
