@@ -10,9 +10,7 @@ if (!container) {
 const root = createRoot(container);
 
 const ctx = {
-  apiUrl: "https://api.mwater.co/v3/",
-  tileUrl: "https://{s}-api.mwater.co/v3/maps/tiles/{z}/{x}/{y}.png",
-  gridUrl: "https://{s}-api.mwater.co/v3/maps/tiles/{z}/{x}/{y}.grid.json"
+  apiUrl: "http://localhost:1234/v3/",
 };
 
 root.render(<App ctx={ctx} />);

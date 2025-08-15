@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import * as L from 'leaflet';
 import * as geocoder from 'esri-leaflet-geocoder';
-import { UtfGrid } from '../leaflet-utfgrid';
+import LeafletMaplibreGL from '../LeafletMapLibreGL';
 import { Context, Site, Filters, MapType, DisplayType } from '../types';
 import PopupView from './popup/PopupView';
 import LegendControl from './controls/LegendControl';
@@ -17,8 +17,7 @@ interface MapViewProps {
 const MapView: React.FC<MapViewProps> = ({ ctx }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
-  const dataLayerRef = useRef<L.TileLayer | null>(null);
-  const gridLayerRef = useRef<any>(null);
+  const vectorLayerRef = useRef<any>(null);
 
   const [mapType, setMapType] = useState<MapType>('wwmc_main');
   const [currentDisplayType, setCurrentDisplayType] = useState<DisplayType>('ph');
@@ -133,66 +132,164 @@ const MapView: React.FC<MapViewProps> = ({ ctx }) => {
   }, []);
 
   const createDataLayer = (map: L.Map, mapType: MapType, displayType: DisplayType, filters: Filters) => {
-    // Remove existing layers
-    if (dataLayerRef.current) {
-      map.removeLayer(dataLayerRef.current);
-    }
-    if (gridLayerRef.current) {
-      map.removeLayer(gridLayerRef.current);
+    // Remove existing vector layer
+    if (vectorLayerRef.current) {
+      map.removeLayer(vectorLayerRef.current);
+      vectorLayerRef.current = null;
     }
 
-    // Build URL for tile layer
-    let url = ctx.tileUrl + "?type=" + mapType + "&display=" + displayType;
+    // Build vector tiles URL
+    const params: Record<string, string> = { display: displayType };
     if (filters.yearFilter) {
-      url += "&year=" + filters.yearFilter;
+      params.year = String(filters.yearFilter);
     }
     if (mapType === 'wwmc_water_actions') {
       const actionType = filters.action_type || 'all';
-      url += "&action_type=" + actionType;
+      params.action_type = actionType;
       // For backward compatibility
       if (actionType === 'all') {
-        url += "&water_action_type=plogging";
+        params.water_action_type = 'plogging';
       } else if (actionType === 'flushing') {
-        url += "&water_action_type=flushing";
+        params.water_action_type = 'flushing';
       }
     }
 
-    // Add data layer
-    const dataLayer = L.tileLayer(url);
-    dataLayer.setOpacity(0.8);
-    dataLayerRef.current = dataLayer;
+    const query = new URLSearchParams(params).toString();
+    const typeSegment = mapType; // 'wwmc_main' | 'wwmc_water_actions'
+    const tilesUrl = `${ctx.apiUrl}custom_vector_tiles/${typeSegment}/{z}/{x}/{y}?${query}`;
 
-    // TODO hack for non-zoom animated tile layers
-    (map as any)._zoomAnimated = false;
-    map.addLayer(dataLayer);
-    (map as any)._zoomAnimated = true;
+    // Build MapLibre style matching provided CartoCSS-like styles
+    const circleRadius = 4; // marker-width: 8 => radius 4
+    const defaultStrokeColor = '#ffffff';
+    const defaultStrokeWidth = 1;
+    const defaultOpacity = 0.8;
 
-    // Add grid layer
-    let gridUrl = ctx.gridUrl + "?type=" + mapType + "&display=" + displayType;
-    if (filters.yearFilter) {
-      gridUrl += "&year=" + filters.yearFilter;
-    }
-    if (mapType === 'wwmc_water_actions') {
-      const actionType = filters.action_type || 'all';
-      gridUrl += "&action_type=" + actionType;
-      // For backward compatibility
-      if (actionType === 'all') {
-        gridUrl += "&water_action_type=plogging";
-      } else if (actionType === 'flushing') {
-        gridUrl += "&water_action_type=flushing";
+    const colorExpression = (() => {
+      if (mapType === 'wwmc_water_actions') {
+        return '#0088FF';
       }
-    }
+      switch (displayType) {
+        case 'visited':
+          return [
+            'case',
+            ['==', ['get', 'visited'], true], '#0088FF',
+            '#888888'
+          ] as any;
+        case 'ph':
+          return [
+            'step', ['to-number', ['get', 'ph']],
+            '#D90259', // <5
+            5, '#E3625B', // [5,6)
+            6, '#DF9A3F', // [6,7)
+            7, '#C0AE40', // [7,8)
+            8, '#9D9F56', // [8,9)
+            9, '#717287', // [9,10)
+            10, '#8B036A' // >=10
+          ] as any;
+        case 'dissolved_oxygen':
+          return [
+            'step', ['to-number', ['get', 'dissolved_oxygen']],
+            '#AA0000', // <2
+            2, '#AAAA00', // [2,5)
+            5, '#00AA00' // >=5
+          ] as any;
+        case 'turbidity':
+          return [
+            'step', ['to-number', ['get', 'turbidity']],
+            '#beb597', // <40
+            40, '#a9c197', // [40,100)
+            100, '#342c1d' // >=100
+          ] as any;
+        default:
+          return '#888888';
+      }
+    })();
 
-    const gridLayer = new (UtfGrid as any)(gridUrl, { useJsonP: false });
-    gridLayerRef.current = gridLayer;
-    map.addLayer(gridLayer);
+    const pointsFilter = mapType === 'wwmc_water_actions'
+      ? ['all', ['==', ['geometry-type'], 'Point'], ['has', 'action_type']] as any
+      : ['==', ['geometry-type'], 'Point'] as any;
 
-    // Handle clicks
-    gridLayer.on('click', (ev: any) => {
-      if (ev.data && ev.data.id) {
-        handleMarkerClick(map, ev.data.id);
+    const style = {
+      version: 8 as const,
+      sources: {
+        points: {
+          type: 'vector' as const,
+          tiles: [tilesUrl],
+          minzoom: 0,
+          maxzoom: 22
+        }
+      },
+      layers: [
+        {
+          id: 'points',
+          type: 'circle' as const,
+          source: 'points',
+          'source-layer': 'main',
+          paint: {
+            'circle-radius': circleRadius,
+            'circle-color': colorExpression,
+            'circle-stroke-width': defaultStrokeWidth,
+            'circle-stroke-color': defaultStrokeColor,
+            'circle-opacity': defaultOpacity,
+            'circle-stroke-opacity': defaultOpacity
+          },
+          filter: pointsFilter
+        }
+      ]
+    };
+
+    const maplibreLayer: any = new (LeafletMaplibreGL as any)({
+      style,
+      interactive: true,
+      // Disable MapLibre GL's own interaction handlers to avoid fighting with Leaflet
+      dragPan: false,
+      scrollZoom: false,
+      boxZoom: false,
+      doubleClickZoom: false,
+      keyboard: false,
+      touchZoomRotate: false
+    });
+
+    // Reset cursor to inherit on add
+    maplibreLayer.on('add', () => {
+      const canvas = maplibreLayer.getCanvas?.();
+      if (canvas) {
+        canvas.style.cursor = 'inherit';
       }
     });
+
+    map.addLayer(maplibreLayer);
+    vectorLayerRef.current = maplibreLayer;
+
+    // Handle clicks on points
+    const glMap = maplibreLayer.getMaplibreMap?.();
+    if (glMap) {
+      const clickHandler = (e: any) => {
+        if (e.features && e.features.length > 0) {
+          const feature = e.features[0];
+          const id = feature?.properties?.id || feature?.properties?._id;
+          if (id) {
+            handleMarkerClick(map, id);
+          }
+        }
+      };
+      glMap.on('click', 'points', clickHandler);
+
+      // Change cursor on hover
+      const enterHandler = () => { glMap.getCanvas().style.cursor = 'pointer'; };
+      const leaveHandler = () => { glMap.getCanvas().style.cursor = 'inherit'; };
+      glMap.on('mousemove', 'points', enterHandler);
+      glMap.on('mouseleave', 'points', leaveHandler);
+
+      // Ensure handlers are cleaned up when layer is removed
+      maplibreLayer.on('remove', () => {
+        try {
+          glMap.off('click', 'points', clickHandler);
+          glMap.off('mousemove', 'points', enterHandler);
+          glMap.off('mouseleave', 'points', leaveHandler);
+        } catch {}
+      });
+    }
   };
 
   const handleMarkerClick = async (map: L.Map, id: string) => {
@@ -255,8 +352,6 @@ const MapView: React.FC<MapViewProps> = ({ ctx }) => {
       fetchMap(mapInstanceRef.current, newMapType, currentDisplayType, filters);
     }
   };
-
-
 
   return (
     <div style={{ position: 'relative', height: '100vh', width: '100vw' }}>

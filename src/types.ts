@@ -1,7 +1,5 @@
 export interface Context {
   apiUrl: string;
-  tileUrl: string;
-  gridUrl: string;
 }
 
 export interface Site {

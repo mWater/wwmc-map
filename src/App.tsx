@@ -4,8 +4,6 @@ import MapView from './components/MapView';
 interface AppProps {
   ctx: {
     apiUrl: string;
-    tileUrl: string;
-    gridUrl: string;
   };
 }
 
