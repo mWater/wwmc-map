@@ -22,8 +22,8 @@ const LegendControl: React.FC<LegendControlProps> = ({
 
   useEffect(() => {
     if (mapType !== 'wwmc_water_actions' && legendContentRef.current) {
-      const query = `type=${mapType}&display=${displayType}`;
-      const fullPath = `${apiUrl}maps/legend?${query}`;
+      const query = `display=${displayType}`;
+      const fullPath = `${apiUrl}custom_vector_tiles/${mapType}/legend?${query}`;
       
       fetch(fullPath)
         .then(response => response.text())

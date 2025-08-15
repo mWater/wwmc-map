@@ -10,7 +10,7 @@ if (!container) {
 const root = createRoot(container);
 
 const ctx = {
-  apiUrl: "http://localhost:1234/v3/",
+  apiUrl: "http://api.mwater.co/v3/",
 };
 
 root.render(<App ctx={ctx} />);

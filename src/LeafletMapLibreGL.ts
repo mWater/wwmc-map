@@ -176,7 +176,7 @@ const LeafletMaplibreGL = L.Layer.extend({
       this._glMap.on('load', function () {
           // Force attribution update
           if (_map && _map.attributionControl) {
-              _map.attributionControl.addAttribution(_getAttribution);
+              _map.attributionControl.addAttribution(_getAttribution());
           }
       });
 

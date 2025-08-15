@@ -177,28 +177,40 @@ const MapView: React.FC<MapViewProps> = ({ ctx }) => {
           ] as any;
         case 'ph':
           return [
-            'step', ['to-number', ['get', 'ph']],
-            '#D90259', // <5
-            5, '#E3625B', // [5,6)
-            6, '#DF9A3F', // [6,7)
-            7, '#C0AE40', // [7,8)
-            8, '#9D9F56', // [8,9)
-            9, '#717287', // [9,10)
-            10, '#8B036A' // >=10
+            'case',
+            ['!=', ['get', 'ph'], null], [
+              'step', ['to-number', ['get', 'ph']],
+              '#D90259', // <5
+              5, '#E3625B', // [5,6)
+              6, '#DF9A3F', // [6,7)
+              7, '#C0AE40', // [7,8)
+              8, '#9D9F56', // [8,9)
+              9, '#717287', // [9,10)
+              10, '#8B036A' // >=10
+            ],
+            '#888888' // null values
           ] as any;
         case 'dissolved_oxygen':
           return [
-            'step', ['to-number', ['get', 'dissolved_oxygen']],
-            '#AA0000', // <2
-            2, '#AAAA00', // [2,5)
-            5, '#00AA00' // >=5
+            'case',
+            ['!=', ['get', 'dissolved_oxygen'], null], [
+              'step', ['to-number', ['get', 'dissolved_oxygen']],
+              '#AA0000', // <2
+              2, '#AAAA00', // [2,5)
+              5, '#00AA00' // >=5
+            ],
+            '#888888' // null values
           ] as any;
         case 'turbidity':
           return [
-            'step', ['to-number', ['get', 'turbidity']],
-            '#beb597', // <40
-            40, '#a9c197', // [40,100)
-            100, '#342c1d' // >=100
+            'case',
+            ['!=', ['get', 'turbidity'], null], [
+              'step', ['to-number', ['get', 'turbidity']],
+              '#beb597', // <40
+              40, '#a9c197', // [40,100)
+              100, '#342c1d' // >=100
+            ],
+            '#888888' // null values
           ] as any;
         default:
           return '#888888';
