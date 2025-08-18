@@ -4,7 +4,7 @@ A web-based mapping application for visualizing water monitoring and action data
 
 ## Prerequisites
 
-- Node.js (v10 recommended)
+- Node.js (v18+ recommended)
 - npm (comes with Node.js)
 - Git
 
@@ -16,38 +16,32 @@ A web-based mapping application for visualizing water monitoring and action data
    cd wwmc-map
    ```
 
-2. Install global dependencies:
-   ```bash
-   npm install -g gulp bower
-   ```
-
-3. Install project dependencies:
+2. Install project dependencies:
    ```bash
    npm install
-   bower install
    ```
 
 ## Development
 
 To start the development server with live reload:
 ```bash
-gulp watch
+npm run dev
 ```
-
-This will:
-- Run an initial build.
-- Start a Webpack Dev Server on `http://localhost:3001`.
-- Watch for file changes and trigger rebuilds.
-- The server provides live reloading.
 
 ## Building for Production
 
 To create a production build:
 ```bash
-gulp build
+npx gulp build
+```
+
+To publish the build to the AWS S3 bucket:
+```bash
+npx gulp publish
 ```
 
 The production files will be generated in the `dist` directory.
+
 
 ## Features
 
