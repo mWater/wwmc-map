@@ -1,5 +1,5 @@
 import esbuild from 'esbuild';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import { dirname, join } from 'path';
 import { copyFileSync, existsSync, mkdirSync, readdirSync, statSync } from 'fs';
 
@@ -31,7 +31,6 @@ function copyRecursive(src, dest) {
 function copyAssets() {
   const distDir = join(__dirname, 'dist');
   const assetsDir = join(__dirname, 'assets');
-  const vendorDir = join(__dirname, 'vendor');
   
   if (!existsSync(distDir)) {
     mkdirSync(distDir, { recursive: true });
@@ -46,10 +45,6 @@ function copyAssets() {
     mkdirSync(imgDir, { recursive: true });
   }
   copyFileSync(join(assetsDir, 'img', 'brand.png'), join(imgDir, 'brand.png'));
-  
-  // Copy vendor files
-  const vendorDistDir = join(distDir, 'vendor');
-  copyRecursive(vendorDir, vendorDistDir);
   
   // Create js directory
   const jsDir = join(distDir, 'js');
@@ -80,22 +75,30 @@ const buildOptions = {
   }
 };
 
-// Copy assets before building
-copyAssets();
+export async function buildOnce() {
+  copyAssets();
+  await esbuild.build(buildOptions);
+  console.log('Build complete');
+}
 
-if (isWatch) {
+export async function watchAndServe() {
+  copyAssets();
   const ctx = await esbuild.context(buildOptions);
   await ctx.watch();
   console.log('Watching for changes...');
-  
-  // Serve files
   await ctx.serve({
     servedir: 'dist',
     port: 3001,
     host: 'localhost'
   });
   console.log('Server running at http://localhost:3001');
-} else {
-  await esbuild.build(buildOptions);
-  console.log('Build complete');
+}
+
+const isCLI = process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url;
+if (isCLI) {
+  if (isWatch) {
+    await watchAndServe();
+  } else {
+    await buildOnce();
+  }
 }

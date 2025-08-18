@@ -14,7 +14,8 @@ const ACTION_LABELS: Record<string, string> = {
   lSTK7fU: 'Education',
   NzRwvgQ: 'Tree planting',
   f1PswKP: 'Habitat Restoration',
-  B5pN6Yc: 'Other (please specify)'
+  B5pN6Yc: 'Other (please specify)',
+  qpNRqUh: "None"
 };
 
 function formatDateLabel(dateStr: string): string {
