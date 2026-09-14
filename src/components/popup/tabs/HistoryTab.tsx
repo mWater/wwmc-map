@@ -18,7 +18,7 @@ const HistoryTab: React.FC<HistoryTabProps> = ({ visitsData }) => {
     // Process data exactly like original - reverse order
     for (const visitData of visitsData.slice().reverse()) {
       const measures: any = {
-        date: visitData.date && visitData.date.length <= 10 
+        date: !visitData.date ? "Date unavailable" : visitData.date.length <= 10
           ? moment(visitData.date, moment.ISO_8601).format("ll") 
           : moment(visitData.date, moment.ISO_8601).format("lll")
       };
@@ -98,7 +98,7 @@ const HistoryTab: React.FC<HistoryTabProps> = ({ visitsData }) => {
               <tr key={index}>
                 <th scope="row">{row.date}</th>
                 <td>{row.turbidity || '-'}</td>
-                <td>{row.ph || '-'}</td>
+                <td>{row.ph ?? '-'}</td>
                 <td>{row.waterTemperature || '-'}</td>
                 <td>{row.dissolvedOxygen || '-'}</td>
                 <td>{row.dissolvedOxygenSaturation || '-'}</td>

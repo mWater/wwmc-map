@@ -21,9 +21,11 @@ const SpeciesTab: React.FC<SpeciesTabProps> = ({ visitsData }) => {
           craneflies: visitData.craneflies,
           dragonflies: visitData.dragonflies,
           scuds: visitData.scuds,
+          crayfish: visitData.crayfish,
+          snails: visitData.snails,
           leeches: visitData.leeches,
           midges: visitData.midges,
-          pounchsnails: visitData.pounchsnails,
+          pouchsnails: visitData.pouchsnails,
           tubiflexworms: visitData.tubiflexworms
         });
       }
@@ -42,9 +44,11 @@ const SpeciesTab: React.FC<SpeciesTabProps> = ({ visitsData }) => {
     { name: 'Craneflies', key: 'craneflies', level: 'warning' },
     { name: 'Dragonflies', key: 'dragonflies', level: 'warning' },
     { name: 'Scuds', key: 'scuds', level: 'warning' },
+    { name: 'Crayfish', key: 'crayfish', level: 'warning' },
+    { name: 'Snails', key: 'snails', level: 'danger' },
     { name: 'Leeches', key: 'leeches', level: 'danger' },
     { name: 'Midges', key: 'midges', level: 'danger' },
-    { name: 'Pounch snails', key: 'pounchsnails', level: 'danger' },
+    { name: 'Pouch snails', key: 'pouchsnails', level: 'danger' },
     { name: 'Tubiflex worms', key: 'tubiflexworms', level: 'danger' }
   ];
 
