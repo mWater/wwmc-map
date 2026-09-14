@@ -154,6 +154,7 @@ const MapView: React.FC<MapViewProps> = ({ ctx }) => {
       }
     }
 
+    params.surveyVersion = '2026-consolidated-1';
     const query = new URLSearchParams(params).toString();
     const typeSegment = mapType; // 'wwmc_main' | 'wwmc_water_actions'
     const tilesUrl = `${ctx.apiUrl}custom_vector_tiles/${typeSegment}/{z}/{x}/{y}?${query}`;
