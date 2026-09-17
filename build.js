@@ -7,6 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const isWatch = process.argv.includes('--watch');
+const isProduction = !isWatch;
 
 // Recursive copy function
 function copyRecursive(src, dest) {
@@ -60,9 +61,10 @@ const buildOptions = {
   format: 'iife',
   platform: 'browser',
   target: 'es2020',
-  sourcemap: true,
+  minify: isProduction,
+  sourcemap: !isProduction,
   define: {
-    'process.env.NODE_ENV': '"development"',
+    'process.env.NODE_ENV': isProduction ? '"production"' : '"development"',
     'global': 'window'
   },
   loader: {
